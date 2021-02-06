@@ -133,3 +133,5 @@ dmypy.json
 
 #IntelliJ
 out/
+
+!Env/requirements.txt
