@@ -2,9 +2,10 @@ import numpy as np
 import cv2
 from matplotlib import pyplot as plt
 
-def estimateDepth(frame):
+def estimateDepth(frame1, frame2):
     print('this is the depth estimator')
-    depthImage = frame
+    #depthImage = frame
+    depthImage = findMatches(frame1, frame2)
     return depthImage
 
 def loadImage(path):
@@ -67,20 +68,21 @@ def findMatches(image1, image2):
 
     goodKp1, goodKp2, distance = findDistanceFromMatches(matches, kp1, kp2)
 
-    newFrame1 = image1
-    newFrame2 = image2
+    #newFrame1 = image1
+    newFrame2 = image2.copy()
 
     for i in range(len(goodKp2)):
         c = colorBasedOnDifference(distance[0][i])
-        newFrame1 = cv2.circle(newFrame1, (int(goodKp1[i][0]), int(goodKp1[i][1])), radius=10, color=c, thickness=10)
+        #newFrame1 = cv2.circle(newFrame1, (int(goodKp1[i][0]), int(goodKp1[i][1])), radius=10, color=c, thickness=10)
         newFrame2 = cv2.circle(newFrame2, (int(goodKp2[i][0]), int(goodKp2[i][1])), radius=10, color=c, thickness=10)
 
     # matches = sorted(matches, key = lambda x:x.distance)
     # img3 = cv2.drawMatches(gray1, kp1, gray2, kp2, matches[:10], None, flags=4)
     # plt.imshow(img3)
 
-    cv2.imshow('frame1', newFrame1)
-    showImage('frame2', newFrame2)
+    #cv2.imshow('frame1', newFrame1)
+    #showImage('frame2', image2)
+    return newFrame2
 
 
 def disparity(img1, img2):
