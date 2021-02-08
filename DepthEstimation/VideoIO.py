@@ -10,23 +10,26 @@ def showImage(name, image):
         return
 
 def loadImage(path):
-    raise NotImplementedError
+    # Use os.path.join to make it work across all OS systems
+    img = cv2.imread(path)
+    return img
 
 
 def loadVideo(path):
-    raise NotImplementedError
+    video = cv2.VideoCapture(path)
+    return video
 
 def showVideo(video):
     raise NotImplementedError
 
-def mss_record():
+def mss_record(width, height, startX, startY):
     with mss() as sct:
-        monitor = {'top': 0, 'left': 0, 'width': 1300, 'height': 600}
+        monitor = {'top': startY, 'left': startX, 'width': width, 'height': height}
         sct_img = sct.grab(monitor)
         return Image.frombytes('RGB', sct_img.size, sct_img.bgra, 'raw', 'BGRX')
 
-def captureScreen():
-    frame = mss_record()
+def captureScreen(width = 1300, height = 600, startX = 0, startY = 0):
+    frame = mss_record(width, height, startX, startY)
     frame = np.array(frame)
     return frame
 

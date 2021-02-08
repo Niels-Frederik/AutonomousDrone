@@ -1,7 +1,7 @@
 #from CollisionDetection import Test123
 import CollisionHelper
 
-def detectCollisions():
+def detectCollisions(frame):
     print('hello from collisionDetection')
     CollisionHelper.helper()
     

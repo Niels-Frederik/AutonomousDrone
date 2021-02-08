@@ -2,8 +2,10 @@ import numpy as np
 import cv2
 from matplotlib import pyplot as plt
 
-def estimateDepth():
+def estimateDepth(frame):
     print('this is the depth estimator')
+    depthImage = frame
+    return depthImage
 
 def loadImage(path):
     # use os.path.join to make it work on all OS systems
