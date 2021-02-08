@@ -37,7 +37,7 @@ def start(path = None, test = False):
         while True:
             frame2 = VideoIO.captureScreen()
             frame2 = cv2.cvtColor(frame2, cv2.COLOR_BGR2RGB)
-            mainLoop(frame, test)
+            mainLoop(frame1, frame2, test)
             frame1 = frame2
 
 def mainLoop(frame1, frame2, test = False):
@@ -54,7 +54,7 @@ def visualizer(frame, processedFrame):
     #Update the values of the frontend
     #cv2.imshow('screen', frame)
     #cv2.imshow('processed', processedFrame)
-    stacked = np.vstack((frame, processedFrame))
+    stacked = np.hstack((frame, processedFrame))
     cv2.imshow('stacked', stacked)
     if cv2.waitKey(1) & 0xFF == ord('q'):
         cv2.destroyAllWindows()
