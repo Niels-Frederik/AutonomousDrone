@@ -41,7 +41,7 @@ def start(path = None, test = False):
             frame1 = frame2
 
 def mainLoop(frame1, frame2, test = False):
-    depthImage = DepthEstimator.estimateDepth(frame1, frame2)
+    depthImage = DepthEstimator.estimateDepth(frame1, frame2, test)
     CollisionDetector.detectCollisions(depthImage)
     RoutePlanner.planRoute()
     DroneController.control()

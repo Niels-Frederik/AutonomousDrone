@@ -2,10 +2,11 @@ import numpy as np
 import cv2
 from matplotlib import pyplot as plt
 
-def estimateDepth(frame1, frame2):
+def estimateDepth(frame1, frame2, test):
     print('this is the depth estimator')
-    #depthImage = frame
-    depthImage = findMatches(frame1, frame2)
+
+    #depthImage = findBlobs(frame2, test)
+    depthImage = findMatches(frame1, frame2, test)
     return depthImage
 
 def loadImage(path):
@@ -18,6 +19,15 @@ def showImage(imgName, image):
     cv2.imshow(imgName, image)
     if cv2.waitKey(0) & 0xFF == ord('q'):
         return
+
+def findBlobs(image, test):
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    detector = cv2.SimpleBlobDetector_create()
+    #showImage('test', image)
+    keypoints = detector.detect(image)
+    if test:
+        image = cv2.drawKeypoints(image, keypoints, np.array([]), (0,0,255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+    return image
 
 def findDistanceFromMatches(matches, kp1, kp2):
     good = []
@@ -56,7 +66,7 @@ def colorBasedOnDifference(distance):
     return tup
 
 
-def findMatches(image1, image2):
+def findMatches(image1, image2, test):
     gray1 = cv2.cvtColor(image1, cv2.COLOR_BGR2GRAY)
     gray2 = cv2.cvtColor(image2, cv2.COLOR_BGR2GRAY)
 
@@ -69,12 +79,13 @@ def findMatches(image1, image2):
     goodKp1, goodKp2, distance = findDistanceFromMatches(matches, kp1, kp2)
 
     #newFrame1 = image1
-    newFrame2 = image2.copy()
-
-    for i in range(len(goodKp2)):
-        c = colorBasedOnDifference(distance[0][i])
-        #newFrame1 = cv2.circle(newFrame1, (int(goodKp1[i][0]), int(goodKp1[i][1])), radius=10, color=c, thickness=10)
-        newFrame2 = cv2.circle(newFrame2, (int(goodKp2[i][0]), int(goodKp2[i][1])), radius=10, color=c, thickness=10)
+    if test:
+        newFrame2 = image2.copy()
+        for i in range(len(goodKp2)):
+            c = colorBasedOnDifference(distance[0][i])
+            #newFrame1 = cv2.circle(newFrame1, (int(goodKp1[i][0]), int(goodKp1[i][1])), radius=10, color=c, thickness=10)
+            cv2.circle(newFrame2, (int(goodKp2[i][0]), int(goodKp2[i][1])), radius=10, color=c, thickness=10)
+        return newFrame2
 
     # matches = sorted(matches, key = lambda x:x.distance)
     # img3 = cv2.drawMatches(gray1, kp1, gray2, kp2, matches[:10], None, flags=4)
@@ -82,7 +93,7 @@ def findMatches(image1, image2):
 
     #cv2.imshow('frame1', newFrame1)
     #showImage('frame2', image2)
-    return newFrame2
+    return image2
 
 
 def disparity(img1, img2):
