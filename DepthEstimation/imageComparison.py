@@ -7,6 +7,10 @@ import cv2
 
 
 def valuateImage(image):
+    cv2.imshow('normal', image)
+    norm_img = np.zeros((image.shape[0],image.shape[1]))
+    image = cv2.normalize(image, norm_img, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX)
+    cv2.imshow('normalized', image)
     windows = [[],[],[],[],[]]
     #k = 64
     k = 16
@@ -87,10 +91,27 @@ def dPyt(r1, g1, b1, r2, g2, b2):
 def drawColorBox(image, r, g, b, x, y):
     cv2.circle(image, (y, x), radius=5, color=(b, g, r), thickness=10)
 
+def splitColorBoxOnPosition(colorBoxes):
+    XYColorBoxes = [[]]
+
+    #for colorBox in colorBoxes:
+
+
+    #for colorBox in colorBoxes:
+        #point1 = colorBox[0]
+        #for box in colorBox:
+            #distanceToP1 = dPyt(point1[0], point1[1], point1[2], box[0], box[1], box[2])
+        #colorBox = sorted(colorBox, key=lambda x: dPyt(point1[0], point1[1], point1[2], x[0], x[1], x[2]))
+        #previousLargestDistance = 0
+        #for box in colorBox:
+        #    bo
+            
+            
+            
 
 if __name__ == '__main__':
     import VideoIO
-    image1 = VideoIO.loadImage('../Source/Images/indoor1.png')
+    image1 = VideoIO.loadImage('../Source/Images/indoor3.png')
     #image1 = VideoIO.loadImage('../Source/Images/Strawberries.jpg')
     #image1 = VideoIO.loadImage('../Source/Images/red.png')
     while(True):
