@@ -7,10 +7,10 @@ import cv2
 
 
 def valuateImage(image):
-    cv2.imshow('normal', image)
+    #cv2.imshow('normal', image)
     norm_img = np.zeros((image.shape[0],image.shape[1]))
     image = cv2.normalize(image, norm_img, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX)
-    cv2.imshow('normalized', image)
+    #cv2.imshow('normalized', image)
     windows = [[],[],[],[],[]]
     #k = 64
     k = 16
@@ -71,7 +71,7 @@ def findSimilar(rList, gList, bList, xList, yList):
         boxFound = False
         for box in colorBoxes:
             distanceToBox = dPyt(rList[i], gList[i], bList[i], box[0][0], box[0][1], box[0][2])
-            if distanceToBox < 20:
+            if distanceToBox < 30:
                 box.append([rList[i], gList[i], bList[i], xList[i], yList[i]])
                 boxFound = True
                 break
@@ -89,7 +89,8 @@ def dPyt(r1, g1, b1, r2, g2, b2):
     return pyt
 
 def drawColorBox(image, r, g, b, x, y):
-    cv2.circle(image, (y, x), radius=5, color=(b, g, r), thickness=10)
+    #cv2.circle(image, (y, x), radius=20, color=(b, g, r), thickness=40)
+    cv2.rectangle(image, (y-15, x-15), (y+15,x+15), color=(b, g, r), thickness=40)
 
 def splitColorBoxOnPosition(colorBoxes):
     XYColorBoxes = [[]]
@@ -111,10 +112,9 @@ def splitColorBoxOnPosition(colorBoxes):
 
 if __name__ == '__main__':
     import VideoIO
-    image1 = VideoIO.loadImage('../Source/Images/indoor3.png')
+    image1 = VideoIO.loadImage('../Source/Images/indoor1.png')
     #image1 = VideoIO.loadImage('../Source/Images/Strawberries.jpg')
     #image1 = VideoIO.loadImage('../Source/Images/red.png')
     while(True):
-        print('hi')
         valuateImage(image1)
         break;
