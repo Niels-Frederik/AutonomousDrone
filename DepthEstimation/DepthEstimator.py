@@ -1,12 +1,14 @@
 import numpy as np
 import cv2
 from matplotlib import pyplot as plt
+import imageComparison as IC
 
 def estimateDepth(frame1, frame2, test):
     print('this is the depth estimator')
 
+    depthImage = frame2
     #depthImage = findBlobs(frame2, test)
-    depthImage = findMatches(frame1, frame2, test)
+    #depthImage = findMatches(frame1, frame2, test)
     return depthImage
 
 def loadImage(path):
