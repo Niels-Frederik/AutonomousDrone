@@ -53,17 +53,21 @@ def mainLoop(frame1, frame2, socket, test = False):
     RoutePlanner.planRoute()
     DroneController.control()
     if test:
-        visualizer(frame2, depthImage)
-        if socket != None:
-            socket.sendMessage('test1', frame1)
+        visualizer(frame2, depthImage, socket)
+        #if socket != None:
+            #socket.sendMessage('test1', frame1)
 
     
 
-def visualizer(frame, processedFrame):
+def visualizer(frame, processedFrame, socket):
     #Update the values of the frontend
     #cv2.imshow('screen', frame)
     #cv2.imshow('processed', processedFrame)
     stacked = np.hstack((frame, processedFrame))
+
+    if socket != None:
+        socket.sendMessage('test1', stacked)
+
     cv2.imshow('stacked', stacked)
     if cv2.waitKey(1) & 0xFF == ord('q'):
         cv2.destroyAllWindows()

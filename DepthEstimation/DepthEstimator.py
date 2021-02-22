@@ -8,7 +8,7 @@ def estimateDepth(frame1, frame2, test):
 
     depthImage = frame2
     #depthImage = findBlobs(frame2, test)
-    #depthImage = findMatches(frame1, frame2, test)
+    depthImage = findMatches(frame1, frame2, test)
     return depthImage
 
 def loadImage(path):
