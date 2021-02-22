@@ -17,10 +17,17 @@ import DepthEstimator
 import RoutePlanner
 import VideoIO
 from GUI import GUI
+from Connection import Connector
 
 #gui = GUI()
 
 def start(path = None, test = False):
+    socket = None
+    if test:
+        try:
+            socket = handShake()
+        except:
+            socket = None
     #if test:
         #_thread.start_new_thread(gui.setup, ())
     if path != None:
@@ -28,7 +35,7 @@ def start(path = None, test = False):
         ret1, frame1 = video.read()
         while video.isOpened():
             ret2, frame2 = video.read()
-            mainLoop(frame1, frame2, test)
+            mainLoop(frame1, frame2, socket, test)
             ret1 = ret2
             frame1 = frame2
     else:
@@ -37,16 +44,18 @@ def start(path = None, test = False):
         while True:
             frame2 = VideoIO.captureScreen()
             frame2 = cv2.cvtColor(frame2, cv2.COLOR_BGR2RGB)
-            mainLoop(frame1, frame2, test)
+            mainLoop(frame1, frame2, socket, test)
             frame1 = frame2
 
-def mainLoop(frame1, frame2, test = False):
+def mainLoop(frame1, frame2, socket, test = False):
     depthImage = DepthEstimator.estimateDepth(frame1, frame2, test)
     CollisionDetector.detectCollisions(depthImage)
     RoutePlanner.planRoute()
     DroneController.control()
     if test:
         visualizer(frame2, depthImage)
+        if socket != None:
+            socket.sendMessage('test1', frame1)
 
     
 
@@ -61,6 +70,10 @@ def visualizer(frame, processedFrame):
         exit()
 
     #gui.updateImages(frame, processedFrame)
+
+def handShake():
+    #return Connector('212.237.131.28', 15003)
+    return Connector('192.168.1.83', 5003)
 
 if __name__ == '__main__':
     print('hello from main')
