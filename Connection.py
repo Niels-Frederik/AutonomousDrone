@@ -12,7 +12,9 @@ class Connector:
         self.client = socket(AF_INET, SOCK_STREAM)
         self.count = 0
         server_address = (host, port)
+        self.client.settimeout(3)
         self.client.connect(server_address)
+        self.client.settimeout(None)
         self.client.sendall('connection successful'.encode())
         self.client.sendall('   done   '.encode())
 
