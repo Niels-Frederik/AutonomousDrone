@@ -76,8 +76,8 @@ def visualizer(frame, processedFrame, socket):
     #gui.updateImages(frame, processedFrame)
 
 def handShake():
-    #return Connector('212.237.131.28', 15003)
-    return Connector('192.168.1.83', 5003)
+    return Connector('212.237.131.28', 15003)
+    #return Connector('192.168.1.83', 5003)
 
 if __name__ == '__main__':
     print('hello from main')
