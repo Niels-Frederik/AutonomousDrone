@@ -10,13 +10,14 @@ sys.path.insert(0, os.path.abspath(os.path.dirname('CollisionDetection/')))
 sys.path.insert(0, os.path.abspath(os.path.dirname('Controller/'))) 
 sys.path.insert(0, os.path.abspath(os.path.dirname('DepthEstimation/'))) 
 sys.path.insert(0, os.path.abspath(os.path.dirname('RoutePlanner/'))) 
+sys.path.insert(0, os.path.abspath(os.path.dirname('Calibration/'))) 
 
 import CollisionDetector
 import DroneController
 import DepthEstimator
 import RoutePlanner
 import VideoIO
-from GUI import GUI
+from Camera import Camera
 from Connection import Connector
 
 #gui = GUI()
@@ -28,27 +29,29 @@ def start(path = None, test = False):
             socket = handShake()
         except:
             socket = None
-    #if test:
-        #_thread.start_new_thread(gui.setup, ())
     if path != None:
         video = VideoIO.loadVideo(path)
         ret1, frame1 = video.read()
+        camera = Camera('./Calibration/outputs/', frame1)
         while video.isOpened():
             ret2, frame2 = video.read()
-            mainLoop(frame1, frame2, socket, test)
+            frame2 = camera.undistort(frame2)
+            mainLoop(camera, frame1, frame2, socket, test)
             ret1 = ret2
             frame1 = frame2
     else:
         frame1 = VideoIO.captureScreen()
         frame1 = cv2.cvtColor(frame1, cv2.COLOR_BGR2RGB)
+        camera = Camera('./Calibration/outputs/', frame1)
         while True:
             frame2 = VideoIO.captureScreen()
             frame2 = cv2.cvtColor(frame2, cv2.COLOR_BGR2RGB)
-            mainLoop(frame1, frame2, socket, test)
+            frame2 = camera.undistort(frame2)
+            mainLoop(camera, frame1, frame2, socket, test)
             frame1 = frame2
 
-def mainLoop(frame1, frame2, socket, test = False):
-    depthImage = DepthEstimator.estimateDepth(frame1, frame2, test)
+def mainLoop(camera, frame1, frame2, socket, test = False):
+    frame2, depthImage = DepthEstimator.estimateDepth(frame1, frame2, test)
     CollisionDetector.detectCollisions(depthImage)
     RoutePlanner.planRoute()
     DroneController.control()
@@ -81,6 +84,8 @@ def handShake():
 
 if __name__ == '__main__':
     print('hello from main')
-    start('Source/Video/IndoorDrone.mp4', True)
+    #start('Source/Video/IndoorDrone.mp4', True)
+    #start('Source/Video/IMG_0460.mp4', True)
+    start('Source/Video/IMG_0463.mp4', True)
     #start(test = True)
 
