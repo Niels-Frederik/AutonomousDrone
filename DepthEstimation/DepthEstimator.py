@@ -14,8 +14,6 @@ def estimateDepth(frame1, frame2, test):
     #depthImage = findMatches(frame2, test)
     depthImage = featureMatcher.findMatches(frame2, test)
 
-    #frame1 = cv2.cvtColor(frame1, cv2.COLOR_RGBA2GRAY)
-    #frame2 = cv2.cvtColor(frame2, cv2.COLOR_RGBA2GRAY)
     #depthImage = disparity(frame1, frame2)
     return depthImage
 
@@ -37,10 +35,9 @@ stereo.setUniquenessRatio(15)
 stereo.setSpeckleRange(5)
 stereo.setSpeckleWindowSize(4)
 def disparity(img2, img1):
+    img1 = cv2.cvtColor(img1, cv2.COLOR_RGBA2GRAY)
+    img2 = cv2.cvtColor(img2, cv2.COLOR_RGBA2GRAY)
     disparity = stereo.compute(img1, img2)
-    #disparity = stereo.compute(img2, img1)
-    #plt.imshow(disparity, 'gray')
-    #plt.show()
     return disparity
 
 if __name__ == '__main__':
@@ -51,6 +48,6 @@ if __name__ == '__main__':
 
     findMatches(img1, img2)
 
-    disp1 = cv2.imread('../Source/disparity1.png', 0)
-    disp2 = cv2.imread('../Source/disparity2.png', 0)
+    disp1 = cv2.imread('../Source/disparity1.png')
+    disp2 = cv2.imread('../Source/disparity2.png')
     disparity(disp1, disp2)

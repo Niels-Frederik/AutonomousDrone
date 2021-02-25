@@ -3,12 +3,16 @@ import numpy as np
 
 class FeatureMatcher():
     def __init__(self):
-        self.orb = cv2.ORB_create(nfeatures=3000, scoreType=cv2.ORB_FAST_SCORE)
+        self.orb = cv2.ORB_create(nfeatures=10000, scoreType=cv2.ORB_FAST_SCORE)
         self.matcher = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
         self.keypoints = []
         self.descriptors = []
 
     def findMatches(self, image, test):
+        #Split the image into 4x4 images and do all of these for each of these to distribute better
+        #maybe try 16x16 instead
+        #The biggest problem is going to be at the boarders
+        
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         kp, descriptor = self.orb.detectAndCompute(gray, None)
         self.keypoints.append(kp)
@@ -22,7 +26,8 @@ class FeatureMatcher():
 
         #Removing the largest outliers
         length = len(distances)
-        largeDist = distances[length-50]
+        #largeDist = distances[length-50]
+        largeDist = distances[int(length*0.9)]
         numberRemoved = 0
         if largeDist > sum(distances)/len(distances)*1.5:
             for i in range(75):
@@ -36,7 +41,8 @@ class FeatureMatcher():
 
         if test:
             newFrame = image.copy()
-            maxDist = distances[len(distances)-1-numberRemoved]
+            #maxDist = distances[len(distances)-1-numberRemoved]
+            maxDist = largeDist
             for i in range(len(goodKps)-numberRemoved):
                 c = self.colorBasedOnDistance(distances[i], maxDist)
                 cv2.circle(newFrame, (int(goodKps[i][0]), int(goodKps[i][1])), radius=5, color=c, thickness=5)
