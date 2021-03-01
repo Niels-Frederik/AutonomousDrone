@@ -4,6 +4,7 @@ from matplotlib import pyplot as plt
 import imageComparison as IC
 #from DepthEstimator/DepthEstimation
 from FeatureMatcher import FeatureMatcher
+import ANMS
 
 featureMatcher = FeatureMatcher()
 def estimateDepth(frame1, frame2, test):
@@ -12,7 +13,9 @@ def estimateDepth(frame1, frame2, test):
     #depthImage = frame2
     #depthImage = findBlobs(frame2, test)
     #depthImage = findMatches(frame2, test)
+
     depthImage = featureMatcher.findMatches(frame2, test)
+    #ANMS.findKeyPoints(frame2)
 
     #depthImage = disparity(frame1, frame2)
     return depthImage

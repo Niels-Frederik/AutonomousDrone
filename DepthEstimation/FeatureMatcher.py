@@ -1,5 +1,7 @@
 import cv2
 import numpy as np
+from ssc import ssc
+from random import shuffle
 
 class FeatureMatcher():
     def __init__(self):
@@ -12,11 +14,32 @@ class FeatureMatcher():
         #Split the image into 4x4 images and do all of these for each of these to distribute better
         #maybe try 16x16 instead
         #The biggest problem is going to be at the boarders
+
+        kps = []
+        descriptors = []
         
-        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        kp, descriptor = self.orb.detectAndCompute(gray, None)
-        self.keypoints.append(kp)
-        self.descriptors.append(descriptor)
+
+        if False:
+            gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+            kp, descriptor = self.orb.detectAndCompute(gray, None)
+            self.keypoints.append(kp)
+            self.descriptors.append(descriptor)
+        else:
+            fast = cv2.FastFeatureDetector_create()
+            keypoints = fast.detect(image, None)
+            #shuffle(keypoints)
+            #selected_keypoints = ssc(
+                    #keypoints, 500, 0.1, image.shape[1], image.shape[0]
+            #)
+            selected_keypoints = keypoints
+            br = cv2.BRISK_create()
+            kp, descriptor = br.compute(image, selected_keypoints)
+            self.keypoints.append(kp)
+            self.descriptors.append(descriptor)
+
+
+
+
 
         if len(self.keypoints) == 1:
             return image
@@ -26,7 +49,6 @@ class FeatureMatcher():
 
         #Removing the largest outliers
         length = len(distances)
-        #largeDist = distances[length-50]
         largeDist = distances[int(length*0.9)]
         numberRemoved = 0
         if largeDist > sum(distances)/len(distances)*1.5:
