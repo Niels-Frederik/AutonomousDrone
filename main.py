@@ -22,9 +22,9 @@ from Connection import Connector
 
 #gui = GUI()
 
-def start(path = None, test = False):
+def start(path = None, localTest = False, remoteTest = False):
     socket = None
-    if test:
+    if remoteTest:
         try:
             socket = handShake()
         except:
@@ -36,7 +36,7 @@ def start(path = None, test = False):
         while video.isOpened():
             ret2, frame2 = video.read()
             frame2 = camera.undistort(frame2)
-            mainLoop(camera, frame1, frame2, socket, test)
+            mainLoop(camera, frame1, frame2, socket, localTest, remoteTest)
             ret1 = ret2
             frame1 = frame2
     else:
@@ -47,22 +47,22 @@ def start(path = None, test = False):
             frame2 = VideoIO.captureScreen()
             frame2 = cv2.cvtColor(frame2, cv2.COLOR_BGR2RGB)
             frame2 = camera.undistort(frame2)
-            mainLoop(camera, frame1, frame2, socket, test)
+            mainLoop(camera, frame1, frame2, socket, localTest, remoteTest)
             frame1 = frame2
 
-def mainLoop(camera, frame1, frame2, socket, test = False):
-    depthImage = DepthEstimator.estimateDepth(frame1, frame2, test)
+def mainLoop(camera, frame1, frame2, socket, test, remoteTest):
+    depthImage = DepthEstimator.estimateDepth(frame1, frame2, test or remoteTest)
     CollisionDetector.detectCollisions(depthImage)
     RoutePlanner.planRoute()
     DroneController.control()
-    if test:
-        visualizer(frame2, depthImage, socket)
+
+    visualizer(frame2, depthImage, socket, test)
         #if socket != None:
             #socket.sendMessage('test1', frame1)
 
     
 
-def visualizer(frame, processedFrame, socket):
+def visualizer(frame, processedFrame, socket, test):
     #Update the values of the frontend
     #cv2.imshow('screen', frame)
     #cv2.imshow('processed', processedFrame)
@@ -71,10 +71,11 @@ def visualizer(frame, processedFrame, socket):
     if socket != None:
         socket.sendMessage('test1', stacked)
 
-    cv2.imshow('stacked', stacked)
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        cv2.destroyAllWindows()
-        exit()
+    if test:
+        cv2.imshow('stacked', stacked)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            cv2.destroyAllWindows()
+            exit()
 
     #gui.updateImages(frame, processedFrame)
 
@@ -86,6 +87,6 @@ if __name__ == '__main__':
     print('hello from main')
     #start('Source/Video/IndoorDrone.mp4', True)
     #start('Source/Video/IMG_0460.mp4', True)
-    start('Source/Video/IMG_0463.mp4', True)
+    start('Source/Video/IMG_0463.mp4', False, True)
     #start(test = True)
 
