@@ -36,8 +36,8 @@ class Connector:
         #encoded_string = base64.b64encode(frame1)
 
 
-        self.sendTcpMessage(message, encoded_string)
-        #self.sendUdpMessage(message, encoded_string)
+        #self.sendTcpMessage(message, encoded_string)
+        self.sendUdpMessage(message, encoded_string)
 
 
     def sendTcpMessage(self, message, encoded_string):
@@ -59,8 +59,9 @@ class Connector:
         self.count = self.count+1
         print(str(self.count))
         #Split the image into smaller parts as the string is too long to send
-        if(len(encoded_string) > 50000):
-            n = (int)(len(encoded_string)/(len(encoded_string)/50000 + 1))
+        #if(len(encoded_string) > 50000):
+        if(len(encoded_string) > 65535):
+            n = (int)(len(encoded_string)/(len(encoded_string)/65535 + 1))
             parts = [encoded_string[i:i+n] for i in range(0, len(encoded_string), n)]
             for part in parts:
                 self.udpClient.sendto(part, self.server_address)
