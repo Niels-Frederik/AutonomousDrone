@@ -52,6 +52,7 @@ def start(path = None, localTest = False, remoteTest = False):
 
 def mainLoop(camera, frame1, frame2, socket, test, remoteTest):
     depthImage = DepthEstimator.estimateDepth(frame1, frame2, test or remoteTest)
+    #depthImage = frame2
     CollisionDetector.detectCollisions(depthImage)
     RoutePlanner.planRoute()
     DroneController.control()
