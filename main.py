@@ -7,10 +7,10 @@ import numpy as np
 
 
 sys.path.insert(0, os.path.abspath(os.path.dirname('CollisionDetection/')))
-sys.path.insert(0, os.path.abspath(os.path.dirname('Controller/'))) 
-sys.path.insert(0, os.path.abspath(os.path.dirname('DepthEstimation/'))) 
-sys.path.insert(0, os.path.abspath(os.path.dirname('RoutePlanner/'))) 
-sys.path.insert(0, os.path.abspath(os.path.dirname('Calibration/'))) 
+sys.path.insert(0, os.path.abspath(os.path.dirname('Controller/')))
+sys.path.insert(0, os.path.abspath(os.path.dirname('DepthEstimation/')))
+sys.path.insert(0, os.path.abspath(os.path.dirname('RoutePlanner/')))
+sys.path.insert(0, os.path.abspath(os.path.dirname('Calibration/')))
 
 import CollisionDetector
 import DroneController
@@ -80,8 +80,9 @@ def visualizer(frame, processedFrame, socket, test):
     #gui.updateImages(frame, processedFrame)
 
 def handShake():
-    return Connector('212.237.131.28', 15003)
-    #return Connector('192.168.1.83', 5003)
+    #return Connector('212.237.131.28', 15003)
+    #return Connector('192.168.1.83', 15003)
+    return Connector('127.0.0.1', 15003)
 
 if __name__ == '__main__':
     print('hello from main')
