@@ -2074,9 +2074,10 @@ if __name__ == "__main__":
 ###
 
 	import time
-	import ps_drone
+	#import ps_drone
 
-	drone = ps_drone.Drone()								# Start using drone					
+	#drone = ps_drone.Drone()								# Start using drone					
+        drone = Drone()
 	drone.printBlue("Battery: ")
 
 	drone.startup()											# Connects to drone and starts subprocesses
@@ -2095,7 +2096,7 @@ if __name__ == "__main__":
 			else:																drone.land()
 		elif key == "0":	drone.hover()
 		elif key == "w":	drone.moveForward()
-	gg	elif key == "s":	drone.moveBackward()
+		elif key == "s":	drone.moveBackward()
 		elif key == "a":	drone.moveLeft()
 		elif key == "d":	drone.moveRight()
 		elif key == "q":	drone.turnLeft()
