@@ -19,7 +19,7 @@ def loadImage(path):
     return img
 
 def saveImage(image):
-    image = cv2.resize(image, (1280, 1024), interpolation=cv2.INTER_CUBIC)
+    #image = cv2.resize(image, (1280, 1024), interpolation=cv2.INTER_CUBIC)
     cv2.imwrite('vignette.jpg', image)
 
 
@@ -27,7 +27,7 @@ def loadVideo(path):
     video = cv2.VideoCapture(path)
     return video
 
-def saveEachImageInVideo(video, savePath, name):
+def saveEachImageInVideo(video, savePath, undistort):
     camera = None
     i = 0
     while(True):
@@ -36,17 +36,17 @@ def saveEachImageInVideo(video, savePath, name):
             #image = cv2.resize(image, (1280,1024), interpolation=cv2.INTER_CUBIC)
             image = cv2.resize(image, (1920,1080), interpolation=cv2.INTER_CUBIC)
             #image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
-            if camera == None:
-                camera = Camera('../../Calibration/outputs/', image)
-            #image = camera.undistort(image)
+            if undistort:
+                if camera == None:
+                    camera = Camera('../Calibration/outputs/', image)
+                image = camera.undistort(image)
             image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
             image = cv2.resize(image, (1280,1024), interpolation=cv2.INTER_CUBIC)
-            #cv2.imwrite(name + savePath + str(i) + '.jpg', image, [cv2.IMWRITE_JPEG_QUALITY, 90])
-            #cv2.imwrite(name + str(i) + '.jpg', image, [cv2.IMWRITE_JPEG_QUALITY, 90])
-            #cv2.imwrite(str(i) + '.jpg', image, [cv2.IMWRITE_JPEG_QUALITY, 90])
-            cv2.imwrite(str(i).zfill(5) + '.jpg', image, [cv2.IMWRITE_JPEG_QUALITY, 90])
+            #cv2.imwrite(str(i).zfill(5) + '.jpg', image, [cv2.IMWRITE_JPEG_QUALITY, 90])
+            cv2.imwrite(os.path.join(savePath, str(i).zfill(5) + '.jpg'), image, [cv2.IMWRITE_JPEG_QUALITY, 90])
             i += 1
-        except:
+        except Exception as e:
+            print(e)
             break
     video.release()
 
@@ -74,16 +74,8 @@ def captureScreenLive():
 
 
 if __name__ == '__main__':
-    sys.path.insert(0, os.path.abspath(os.path.dirname('../../Calibration/')))
     sys.path.insert(0, os.path.abspath(os.path.dirname('../Calibration/')))
     from Camera import Camera
     #captureScreenLive()
-    #video = loadVideo('/home/yarl/Downloads/video-1617541377.mp4')
-    #video = loadVideo('../../Source/Video/IMG_0460.mp4')
-    #video = loadVideo('/home/yarl/Downloads/IMG_0490.mp4')
-    #video = loadVideo('/home/yarl/Downloads/droneVideo3.0.mp4')
-    video = loadVideo('/home/yarl/Downloads/droneVideo4.0.mp4')
-    #image = loadImage('/home/yarl/Downloads/vignette2.jpg')
-    #saveImage(image)
-    #video = loadVideo('../../Source/Video/IMG_0463.mp4')
-    saveEachImageInVideo(video, './', 'droneVideo')
+    video = loadVideo('../Source/Video/droneVideo4.0.mp4')
+    saveEachImageInVideo(video, '../Output/droneVideo4.0', True)
