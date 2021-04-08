@@ -2,9 +2,10 @@ import numpy as np
 import cv2
 from matplotlib import pyplot as plt
 import imageComparison as IC
-#from DepthEstimator/DepthEstimation
 from FeatureMatcher import FeatureMatcher
 import ANMS
+import denseDepth
+
 
 featureMatcher = FeatureMatcher()
 def estimateDepth(frame1, frame2, test):
@@ -14,10 +15,12 @@ def estimateDepth(frame1, frame2, test):
     #depthImage = findBlobs(frame2, test)
     #depthImage = findMatches(frame2, test)
 
-    depthImage = featureMatcher.findMatches(frame2, test)
+    #depthImage = featureMatcher.findMatches(frame2, test)
     #ANMS.findKeyPoints(frame2)
 
     #depthImage = disparity(frame1, frame2)
+    depthImage = denseDepth.processImage(frame2)
+    print(depthImage)
     return depthImage
 
 def findBlobs(image, test):
@@ -42,6 +45,10 @@ def disparity(img2, img1):
     img2 = cv2.cvtColor(img2, cv2.COLOR_RGBA2GRAY)
     disparity = stereo.compute(img1, img2)
     return disparity
+
+
+
+
 
 if __name__ == '__main__':
     img1 = loadImage('../Source/test7.png')

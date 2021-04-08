@@ -11,6 +11,7 @@ sys.path.insert(0, os.path.abspath(os.path.dirname('Controller/')))
 sys.path.insert(0, os.path.abspath(os.path.dirname('DepthEstimation/')))
 sys.path.insert(0, os.path.abspath(os.path.dirname('RoutePlanner/')))
 sys.path.insert(0, os.path.abspath(os.path.dirname('Calibration/')))
+sys.path.insert(0, os.path.abspath(os.path.dirname('DepthEstimation/DenseDepth/')))
 
 import CollisionDetector
 import DroneController
@@ -50,16 +51,20 @@ def start(path = None, localTest = False, remoteTest = False):
             mainLoop(camera, frame1, frame2, socket, localTest, remoteTest)
             frame1 = frame2
 
+i = 0
 def mainLoop(camera, frame1, frame2, socket, test, remoteTest):
-    depthImage = DepthEstimator.estimateDepth(frame1, frame2, test or remoteTest)
-    #depthImage = frame2
-    CollisionDetector.detectCollisions(depthImage)
-    RoutePlanner.planRoute()
-    DroneController.control()
+    global i
+    if i%60 == 0:
+        depthImage = DepthEstimator.estimateDepth(frame1, frame2, test or remoteTest)
+        #depthImage = frame2
+        CollisionDetector.detectCollisions(depthImage)
+        RoutePlanner.planRoute()
+        DroneController.control()
 
-    visualizer(frame2, depthImage, socket, test)
-        #if socket != None:
-            #socket.sendMessage('test1', frame1)
+        visualizer(frame2, depthImage, socket, test)
+            #if socket != None:
+                #socket.sendMessage('test1', frame1)
+    i += 1
 
     
 
@@ -67,7 +72,8 @@ def visualizer(frame, processedFrame, socket, test):
     #Update the values of the frontend
     #cv2.imshow('screen', frame)
     #cv2.imshow('processed', processedFrame)
-    stacked = np.hstack((frame, processedFrame))
+    #stacked = np.hstack((frame, processedFrame))
+    stacked = processedFrame
 
     if socket != None:
         socket.sendMessage('test1', stacked)
@@ -89,6 +95,6 @@ if __name__ == '__main__':
     print('hello from main')
     #start('Source/Video/IndoorDrone.mp4', True)
     #start('Source/Video/IMG_0460.mp4', True)
-    start('Source/Video/IMG_0463.mp4', False, True)
+    start('Source/Video/IMG_0463.mp4', True, True)
     #start(test = True)
 
