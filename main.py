@@ -22,53 +22,49 @@ from Camera import Camera
 from Connection import Connector
 import PIL.Image as pil
 
-#gui = GUI()
 
 def start(path = None, localTest = False, remoteTest = False):
-    socket = None
-    if remoteTest:
-        try:
-            socket = handShake()
-        except:
-            socket = None
+    socket = getSocket(remoteTest)
     if path != None:
-        video = VideoIO.loadVideo(path)
-        ret1, frame1 = video.read()
-        camera = Camera('./Calibration/outputs/', frame1)
-        print(camera.cameraMatrix)
-        while video.isOpened():
-            ret2, frame2 = video.read()
-            #frame2 = camera.undistort(frame2)
-            mainLoop(camera, frame1, frame2, socket, localTest, remoteTest)
-            ret1 = ret2
-            frame1 = frame2
+        runFromVideo(path, socket, localTest, remoteTest)
     else:
-        frame1 = VideoIO.captureScreen()
-        frame1 = cv2.cvtColor(frame1, cv2.COLOR_BGR2RGB)
-        camera = Camera('./Calibration/outputs/', frame1)
-        while True:
-            frame2 = VideoIO.captureScreen()
-            frame2 = cv2.cvtColor(frame2, cv2.COLOR_BGR2RGB)
-            frame2 = camera.undistort(frame2)
-            mainLoop(camera, frame1, frame2, socket, localTest, remoteTest)
-            frame1 = frame2
+        runLive(socket, localTest, remoteTest)
+
+def runFromVideo(path, socket, localTest, remoteTest):
+    video = VideoIO.loadVideo(path)
+    ret, frame = video.read()
+    camera = Camera('./Calibration/outputs/', frame)
+    print(camera.cameraMatrix)
+    while video.isOpened():
+        ret, frame = video.read()
+        #frame = camera.undistort(frame)
+        mainLoop(camera, frame, socket, localTest, remoteTest)
+
+
+def runLive(socket, localTest, remoteTest):
+    frame = VideoIO.captureScreen()
+    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    camera = Camera('./Calibration/outputs/', frame)
+    while True:
+        frame = VideoIO.captureScreen()
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        frame = camera.undistort(frame)
+        mainLoop(camera, frame, socket, localTest, remoteTest)
 
 i = 0
-def mainLoop(camera, frame1, frame2, socket, test, remoteTest):
+def mainLoop(camera, frame, socket, test, remoteTest):
+    testMode = test or remoteTest
     global i
     if i%60 == 0:
-        depthImage = DepthEstimator.estimateDepth(frame1, frame2, test or remoteTest)
-        #depthImage = frame2
-        CollisionDetector.detectCollisions(depthImage)
-        RoutePlanner.planRoute()
+        depthImage = DepthEstimator.estimateDepthImage(frame, testMode)
+        CollisionDetector.avoidCollisionsFromDepthImage(depthImage, testMode)
+        #RoutePlanner.planRoute()
         DroneController.control()
 
-        visualizer(frame2, depthImage, socket, test)
-            #if socket != None:
-                #socket.sendMessage('test1', frame1)
+        visualizer(frame, depthImage, socket, test)
     i += 1
 
-    
+
 
 def visualizer(frame, processedFrame, socket, test):
     #Update the values of the frontend
@@ -94,16 +90,21 @@ def visualizer(frame, processedFrame, socket, test):
 
     #gui.updateImages(frame, processedFrame)
 
-def handShake():
-    #return Connector('212.237.131.28', 15003)
-    #return Connector('192.168.1.83', 15003)
-    return Connector('127.0.0.1', 15003)
+def getSocket(remoteTest):
+    if remoteTest:
+        try:
+            return Connector('127.0.0.1', 15003)
+            #return Connector('212.237.131.28', 15003)
+            #return Connector('192.168.1.83', 15003)
+        except:
+            return None
+    return None
 
 if __name__ == '__main__':
     print('hello from main')
     #start('Source/Video/IndoorDrone.mp4', True)
     #start('Source/Video/IMG_0460.mp4', True)
     #start('Source/Video/IMG_0463.mp4', True, True)
-    start('Source/Video/droneVideo4.0.mp4', True, True)
+    start('Source/Video/droneVideo4.0.mp4', True)
     #start(test = True)
 
