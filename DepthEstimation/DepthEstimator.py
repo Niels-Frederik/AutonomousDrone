@@ -20,7 +20,6 @@ def estimateDepth(frame1, frame2, test):
 
     #depthImage = disparity(frame1, frame2)
     depthImage = denseDepth.processImage(frame2)
-    print(depthImage)
     return depthImage
 
 def findBlobs(image, test):

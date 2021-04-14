@@ -16,7 +16,7 @@ def predict(model, images, minDepth=10, maxDepth=1000, batch_size=2):
 def scale_up(scale, images):
     from skimage.transform import resize
     scaled = []
-    
+
     for i in range(len(images)):
         img = images[i]
         output_shape = (scale * img.shape[0], scale * img.shape[1])
@@ -42,7 +42,7 @@ def to_multichannel(i):
     if i.shape[2] == 3: return i
     i = i[:,:,0]
     return np.stack((i,i,i), axis=2)
-        
+
 def display_images(outputs, inputs=None, gt=None, is_colormap=True, is_rescale=True):
     import matplotlib.pyplot as plt
     import skimage
@@ -51,12 +51,12 @@ def display_images(outputs, inputs=None, gt=None, is_colormap=True, is_rescale=T
     plasma = plt.get_cmap('plasma')
 
     shape = (outputs[0].shape[0], outputs[0].shape[1], 3)
-    
+
     all_images = []
 
     for i in range(outputs.shape[0]):
         imgs = []
-        
+
         if isinstance(inputs, (list, tuple, np.ndarray)):
             x = to_multichannel(inputs[i])
             x = resize(x, shape, preserve_range=True, mode='reflect', anti_aliasing=True )

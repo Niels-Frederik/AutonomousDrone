@@ -77,5 +77,6 @@ if __name__ == '__main__':
     sys.path.insert(0, os.path.abspath(os.path.dirname('../Calibration/')))
     from Camera import Camera
     #captureScreenLive()
-    video = loadVideo('../Source/Video/droneVideo4.0.mp4')
-    saveEachImageInVideo(video, '../Output/droneVideo4.0', True)
+    #video = loadVideo('../Source/Video/droneVideo4.0.mp4')
+    video = loadVideo('../Source/Video/ipadVideo.mp4')
+    saveEachImageInVideo(video, '../Output/ipadVideoUncalibrated', False)

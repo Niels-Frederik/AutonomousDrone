@@ -20,6 +20,7 @@ import RoutePlanner
 import VideoIO
 from Camera import Camera
 from Connection import Connector
+import PIL.Image as pil
 
 #gui = GUI()
 
@@ -34,9 +35,10 @@ def start(path = None, localTest = False, remoteTest = False):
         video = VideoIO.loadVideo(path)
         ret1, frame1 = video.read()
         camera = Camera('./Calibration/outputs/', frame1)
+        print(camera.cameraMatrix)
         while video.isOpened():
             ret2, frame2 = video.read()
-            frame2 = camera.undistort(frame2)
+            #frame2 = camera.undistort(frame2)
             mainLoop(camera, frame1, frame2, socket, localTest, remoteTest)
             ret1 = ret2
             frame1 = frame2
@@ -72,7 +74,12 @@ def visualizer(frame, processedFrame, socket, test):
     #Update the values of the frontend
     #cv2.imshow('screen', frame)
     #cv2.imshow('processed', processedFrame)
-    #stacked = np.hstack((frame, processedFrame))
+
+    #frame = pil.fromarray(frame)
+    #frame = frame.resize((640, 320), pil.LANCZOS)
+    #frame = np.array(frame)
+    #frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    #stacked = np.hstack((frame, processedFrame[0]))
     stacked = processedFrame
 
     if socket != None:
@@ -80,6 +87,7 @@ def visualizer(frame, processedFrame, socket, test):
 
     if test:
         cv2.imshow('stacked', stacked)
+        #cv2.imshow('a', frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             cv2.destroyAllWindows()
             exit()
@@ -95,6 +103,7 @@ if __name__ == '__main__':
     print('hello from main')
     #start('Source/Video/IndoorDrone.mp4', True)
     #start('Source/Video/IMG_0460.mp4', True)
-    start('Source/Video/IMG_0463.mp4', True, True)
+    #start('Source/Video/IMG_0463.mp4', True, True)
+    start('Source/Video/droneVideo4.0.mp4', True, True)
     #start(test = True)
 
