@@ -6,6 +6,13 @@ from FeatureMatcher import FeatureMatcher
 import ANMS
 import denseDepth
 
+class DepthEstimator():
+    def __init__(self, debug):
+        self.debug = debug
+
+    def estimateDepth(self, frame):
+        #Add the depth estimation we have from main to make it compatible with nonMachineLearning
+        pass
 
 featureMatcher = FeatureMatcher()
 def estimateDepthImage(frame, test):
