@@ -22,73 +22,74 @@ from Camera import Camera
 from Connection import Connector
 import PIL.Image as pil
 
+class Main():
+    def __init__(self, localTest, remoteTest, debug, videoPath = None):
+        if videoPath != None:
+            self.video = VideoIO.loadVideo(videoPath)
+            _, frame = self.video.read()
+            self.live = False
+        else:
+            self.live = True
+            frame = VideoIO.captureScreen()
+        self.localTest = localTest
+        self.remoteTest = remoteTest
+        self.debug = debug
 
-def start(path = None, localTest = False, remoteTest = False):
-    socket = getSocket(remoteTest)
-    if path != None:
-        runFromVideo(path, socket, localTest, remoteTest)
-    else:
-        runLive(socket, localTest, remoteTest)
+        self.socket = getSocket(remoteTest)
+        self.camera = Camera('./Calibration/outputs/', frame)
+        #which method is used
+        #depthEstimator
+        #CollisionDetector
+        #Visualizer
+        self.frameNumber = 0
 
-def runFromVideo(path, socket, localTest, remoteTest):
-    video = VideoIO.loadVideo(path)
-    ret, frame = video.read()
-    camera = Camera('./Calibration/outputs/', frame)
-    print(camera.cameraMatrix)
-    while video.isOpened():
-        ret, frame = video.read()
-        #frame = camera.undistort(frame)
-        mainLoop(camera, frame, socket, localTest, remoteTest)
+    def start(self):
+        if self.live:
+            self.runLive()
+        else:
+            self.runVideo()
 
+    def runVideo(self):
+        while True:
+            _, frame = self.video.read()
+            if self.frameNumber%60 == 0:
+                self.handleFrame(frame)
+            self.frameNumber += 1
 
-def runLive(socket, localTest, remoteTest):
-    frame = VideoIO.captureScreen()
-    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    camera = Camera('./Calibration/outputs/', frame)
-    while True:
-        frame = VideoIO.captureScreen()
-        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        frame = camera.undistort(frame)
-        mainLoop(camera, frame, socket, localTest, remoteTest)
+    def runLive(self):
+        while True:
+            frame = VideoIO.captureScreen()
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            if self.frameNumber%60 == 0:
+                self.handleFrame(frame)
+            self.frameNumber += 1
 
-i = 0
-def mainLoop(camera, frame, socket, test, remoteTest):
-    testMode = test or remoteTest
-    global i
-    if i%60 == 0:
-        depthImage = DepthEstimator.estimateDepthImage(frame, testMode)
-        CollisionDetector.avoidCollisionsFromDepthImage(depthImage, testMode)
-        #RoutePlanner.planRoute()
+    def handleFrame(self, frame):
+        depthImage = DepthEstimator.estimateDepthImage(frame, self.debug)
+        CollisionDetector.avoidCollisionsFromDepthImage(depthImage, self.debug)
         DroneController.control()
-
-        visualizer(frame, depthImage, socket, test)
-    i += 1
+        self.visualizer(frame, depthImage)
 
 
+    def visualizer(self, frame, processedFrame):
+        #cv2.imshow('screen', frame)
+        #cv2.imshow('processed', processedFrame)
 
-def visualizer(frame, processedFrame, socket, test):
-    #Update the values of the frontend
-    #cv2.imshow('screen', frame)
-    #cv2.imshow('processed', processedFrame)
+        #frame = pil.fromarray(frame)
+        #frame = frame.resize((640, 320), pil.LANCZOS)
+        #frame = np.array(frame)
+        #frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        #stacked = np.hstack((frame, processedFrame[0]))
+        stacked = processedFrame
 
-    #frame = pil.fromarray(frame)
-    #frame = frame.resize((640, 320), pil.LANCZOS)
-    #frame = np.array(frame)
-    #frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    #stacked = np.hstack((frame, processedFrame[0]))
-    stacked = processedFrame
+        if self.remoteTest and self.socket != None:
+            self.socket.sendMessage('test1', stacked)
 
-    if socket != None:
-        socket.sendMessage('test1', stacked)
-
-    if test:
-        cv2.imshow('stacked', stacked)
-        #cv2.imshow('a', frame)
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            cv2.destroyAllWindows()
-            exit()
-
-    #gui.updateImages(frame, processedFrame)
+        if self.localTest:
+            cv2.imshow('stacked', stacked)
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                cv2.destroyAllWindows()
+                exit()
 
 def getSocket(remoteTest):
     if remoteTest:
@@ -101,10 +102,15 @@ def getSocket(remoteTest):
     return None
 
 if __name__ == '__main__':
-    print('hello from main')
+    videoPath = 'Source/Video/droneVideo4.0.mp4'
+    localTest = True
+    remoteTest = False
+    debug = True
+    main = Main(localTest, remoteTest, debug, videoPath)
+    main.start()
+    #start(video, localTest, remoteTest, debug)
     #start('Source/Video/IndoorDrone.mp4', True)
     #start('Source/Video/IMG_0460.mp4', True)
     #start('Source/Video/IMG_0463.mp4', True, True)
-    start('Source/Video/droneVideo4.0.mp4', True)
-    #start(test = True)
+    #start('Source/Video/droneVideo4.0.mp4', True)
 
