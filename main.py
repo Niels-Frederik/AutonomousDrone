@@ -15,6 +15,7 @@ sys.path.insert(0, os.path.abspath(os.path.dirname('DepthEstimation/DenseDepth/'
 
 #import CollisionDetector
 from collisionAvoider import CollisionAvoider
+from collisionAvoiderDepthImage import CollisionAvoiderDepthImage
 import DroneController
 import DepthEstimator
 import RoutePlanner
@@ -43,7 +44,8 @@ class Main():
         #CollisionDetector
         #Visualizer
         depthImage = DepthEstimator.estimateDepthImage(frame, self.debug)
-        self.collisionAvoider = CollisionAvoider(depthImage, debug)
+        #self.collisionAvoider = CollisionAvoider(depthImage, debug)
+        self.collisionAvoider = CollisionAvoiderDepthImage(depthImage, debug)
         self.frameNumber = 0
 
     def start(self):
@@ -70,7 +72,7 @@ class Main():
     def handleFrame(self, frame):
         depthImage = DepthEstimator.estimateDepthImage(frame, self.debug)
         #CollisionDetector.avoidCollisionsFromDepthImage(depthImage, self.debug)
-        self.collisionAvoider.avoidCollisionsFromDepthImage(depthImage)
+        self.collisionAvoider.avoidCollisions(depthImage)
         DroneController.control()
         self.visualizer(frame, depthImage)
 

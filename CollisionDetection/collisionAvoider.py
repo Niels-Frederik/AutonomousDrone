@@ -1,5 +1,3 @@
-#from CollisionDetection import Test123
-import CollisionHelper
 import cv2
 
 class CollisionAvoider():
@@ -9,7 +7,5 @@ class CollisionAvoider():
         self.width = int(frame.shape[1]/self.scaleFactor)
         self.debug = debug
 
-    def avoidCollisionsFromDepthImage(self, frame):
-        downScaledFrame = cv2.resize(frame, (self.width, self.height))
-        return CollisionHelper.findSafestDirection(downScaledFrame, frame, self.scaleFactor, self.debug)
-
+    def avoidCollisions(self, frame):
+        pass
