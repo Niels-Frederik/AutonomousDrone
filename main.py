@@ -5,7 +5,6 @@ import _thread
 import time
 import numpy as np
 
-
 sys.path.insert(0, os.path.abspath(os.path.dirname('CollisionDetection/')))
 sys.path.insert(0, os.path.abspath(os.path.dirname('Controller/')))
 sys.path.insert(0, os.path.abspath(os.path.dirname('DepthEstimation/')))
@@ -13,7 +12,6 @@ sys.path.insert(0, os.path.abspath(os.path.dirname('RoutePlanner/')))
 sys.path.insert(0, os.path.abspath(os.path.dirname('Calibration/')))
 sys.path.insert(0, os.path.abspath(os.path.dirname('DepthEstimation/DenseDepth/')))
 
-#import CollisionDetector
 from collisionAvoider import CollisionAvoider
 from collisionAvoiderDepthImage import CollisionAvoiderDepthImage
 import DroneController
@@ -25,28 +23,38 @@ from Connection import Connector
 import PIL.Image as pil
 
 class Main():
-    def __init__(self, localTest, remoteTest, debug, videoPath = None):
-        if videoPath != None:
-            self.video = VideoIO.loadVideo(videoPath)
-            _, frame = self.video.read()
-            self.live = False
-        else:
-            self.live = True
-            frame = VideoIO.captureScreen()
+    def __init__(self, localTest, remoteTest, debug, videoPath = None, useDepthImage = False):
         self.localTest = localTest
         self.remoteTest = remoteTest
         self.debug = debug
-
-        self.socket = getSocket(remoteTest)
-        self.camera = Camera('./Calibration/outputs/', frame)
-        #which method is used
-        #depthEstimator
-        #CollisionDetector
-        #Visualizer
-        depthImage = DepthEstimator.estimateDepthImage(frame, self.debug)
-        #self.collisionAvoider = CollisionAvoider(depthImage, debug)
-        self.collisionAvoider = CollisionAvoiderDepthImage(depthImage, debug)
         self.frameNumber = 0
+
+        self.initializeVideo(videoPath)
+        self.socket = getSocket(remoteTest)
+        self.initializeHelpers(useDepthImage)
+
+    def initializeVideo(self, videoPath):
+        if videoPath != None:
+            self.video = VideoIO.loadVideo(videoPath)
+            self.live = False
+        else:
+            self.live = True
+
+    def initializeHelpers(self, useDepthImage):
+        if self.live:
+            frame = VideoIO.captureScreen()
+        else:
+            _, frame = self.video.read()
+        self.camera = Camera('./Calibration/outputs/', frame)
+        if useDepthImage:
+            #Initialize depthEstimatorDepthImage
+            depthImage = DepthEstimator.estimateDepthImage(frame, self.debug)
+            self.collisionAvoider = CollisionAvoiderDepthImage(depthImage, self.debug)
+            #Visualizer
+        else:
+            #initialize default depthEstimator
+            self.collisionAvoider = CollisionAvoider(self.debug)
+            #Visualizer
 
     def start(self):
         if self.live:
@@ -71,7 +79,6 @@ class Main():
 
     def handleFrame(self, frame):
         depthImage = DepthEstimator.estimateDepthImage(frame, self.debug)
-        #CollisionDetector.avoidCollisionsFromDepthImage(depthImage, self.debug)
         self.collisionAvoider.avoidCollisions(depthImage)
         DroneController.control()
         self.visualizer(frame, depthImage)
@@ -111,7 +118,7 @@ if __name__ == '__main__':
     localTest = True
     remoteTest = False
     debug = True
-    main = Main(localTest, remoteTest, debug, videoPath)
+    main = Main(localTest, remoteTest, debug, videoPath, useDepthImage=True)
     main.start()
     #start(video, localTest, remoteTest, debug)
     #start('Source/Video/IndoorDrone.mp4', True)
