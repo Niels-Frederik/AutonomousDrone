@@ -2,11 +2,11 @@
 import CollisionHelper
 import cv2
 
-def avoidCollisionsFromDepthImage(frame, test):
+def avoidCollisionsFromDepthImage(frame, debug):
     print('hello from collisionDetection')
-    #Make it look for brightest zones instead of pixel
-    downScaledFrame = cv2.resize(frame, (int(frame.shape[1]/16), int(frame.shape[0]/16)))
-    return CollisionHelper.findSafestDirection(downScaledFrame, frame, test)
+    scaleFactor = 32
+    downScaledFrame = cv2.resize(frame, (int(frame.shape[1]/scaleFactor), int(frame.shape[0]/scaleFactor)))
+    return CollisionHelper.findSafestDirection(downScaledFrame, frame, scaleFactor, debug)
 
 if __name__ == '__main__':
     print('this code is only run if this is called as the main')
