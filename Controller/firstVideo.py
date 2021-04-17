@@ -1,40 +1,67 @@
+#########
+# firstVideo.py
+# This program is part of the online PS-Drone-API-tutorial on www.playsheep.de/drone.
+# It shows the general usage of the video-function of a Parrot AR.Drone 2.0 using the PS-Drone-API.
+# The drone will stay on the ground.
+# Dependencies: a POSIX OS, openCV2, PS-Drone-API 2.0 beta or higher.
+# (w) J. Philipp de Graaff, www.playsheep.de, 2014
+##########
+# LICENCE:
+#   Artistic License 2.0 as seen on http://opensource.org/licenses/artistic-license-2.0 (retrieved December 2014)
+#   Visit www.playsheep.de/drone or see the PS-Drone-API-documentation for an abstract from the Artistic License 2.0.
+###########
+
 ##### Suggested clean drone startup sequence #####
 import time, sys
-import Drone_API
+import psdrone3                                              # Import PS-Drone
+import cv2
 
-print('hihihihi')
+drone = psdrone3.Drone()                                     # Start using drone
+drone.startup()                                              # Connects to drone and starts subprocesses
 
-drone = Drone_API.Drone() 
-print("Battery: test")
+drone.reset()                                                # Sets drone's status to good (LEDs turn green when red)
+while (drone.getBattery()[0] == -1):      time.sleep(0.1)    # Waits until drone has done its reset
+print("Battery: "+str(drone.getBattery()[0])+"%  "+str(drone.getBattery()[1]))	# Gives a battery-status
+drone.useDemoMode(True)                                      # Just give me 15 basic dataset per second (is default anyway)
 
-drone.startup()
-#drone.reset()
-drone.printBlue('ready')
-while (drone.getBattery()[0]==-1): time.sleep(0.1) #Reset completed ? 
-print("Battery:"+str(drone.getBattery()[0])+"% "+str(drone.getBattery()[1]))
-drone.useDemoMode(True) #15 basic datasets per second 
-drone.getNDpackage(["demo","vision detect"]) #Packets to decoded
-time.sleep(0.5)
-
-##### Mainprogram #####
+##### Mainprogram begin #####
+drone.setConfigAllID()                                       # Go to multiconfiguration-mode
+drone.sdVideo()                                              # Choose lower resolution (hdVideo() for...well, guess it)
+drone.frontCam()                                             # Choose front view
 CDC = drone.ConfigDataCount
-drone.setConfigAllID()
-drone.sdVideo()
-drone.frontCam()
-while CDC==drone.ConfigDataCount: time.sleep(0.001) #Wait until it is done 
-drone.startVideo() #Start video-function
-drone.showVideo() #Display the video
+while CDC == drone.ConfigDataCount:       time.sleep(0.0001) # Wait until it is done (after resync is done)
+#drone.saveVideo(True)
+drone.startVideo()                                           # Start video-function
+drone.showVideo()                                            # Display the video
+#drone.saveVideo(True)
 
-print("<space> to toggle front- and groundcamera, any other key to stop") 
-IMC = drone.VideoImageCount #Number of encoded videoframes
-stop = False
-ground = False #To toggle front- and groundcamera
+##### And action !
+print("Use <space> to toggle front- and groundcamera, any other key to stop")
+IMC =    drone.VideoImageCount                               # Number of encoded videoframes
+stop =   False
+ground = False
 
-while drone.VideoImageCount==IMC: time.sleep(0.01) #Wait for next image 
-IMC = drone.VideoImageCount #Number of encoded videoframes
-key = drone.getKey()
-if key==" ":
-    if ground: ground = False
-    else: ground = True
-    drone.groundVideo(ground) #Toggle between front- and groundcamera.
-elif key and key!=" ": stop=True
+while not stop:
+    while drone.VideoImageCount == IMC: time.sleep(0.01)     # Wait until the next video-frame
+    IMC = drone.VideoImageCount
+    img = drone.VideoImage
+    cv2.imshow('k', img)
+    cv2.waitKey(1)
+    key = drone.getKey()                                     # Gets a pressed key
+    if key==" ":
+        if ground:              ground = False
+        else:                   ground = True
+        drone.groundVideo(ground)                            # Toggle between front- and groundcamera. Hint: options work for all videocommands
+    elif key == ".":
+        if drone.NavData["demo"][0][2] and not drone.NavData["demo"][0][3]: drone.takeoff()
+        else: drone.land()
+    elif key == "w": drone.moveForward()
+    elif key == "s": drone.moveBackward()
+    elif key == "a": drone.moveLeft()
+    elif key == "d": drone.moveRight()
+    elif key == "q": drone.turnRight()
+    elif key == "e": drone.turnLeft()
+    elif key == "0": drone.hover()
+    elif key and key != "":
+        stop =True
+        break

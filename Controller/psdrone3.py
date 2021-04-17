@@ -43,7 +43,7 @@ class Drone(object):
 ######################################=-
 	###### Bootup and base configuration
 	def __init__(self):
-		self.__Version = 		"3.1.5"
+		self.__Version = 		"3.2.0 alpha"
 		self.__lock = 			threading.Lock()	# To prevent semaphores
 		self.__startTime = 		time.time()
 		self.__speed = 			0.2					# Default drone moving speed in percent.
@@ -54,7 +54,7 @@ class Drone(object):
 		self.stopOnComLoss = 	False				# when there is a communication-problem, drone will land or not
 
 		# Drone communication variables
-		self.DroneIP = 		"192.168.0.91"
+		self.DroneIP = 		"192.168.1.1"
 		self.NavDataPort = 	5554
 		self.VideoPort = 	5555
 		self.CmdPort = 		5556
@@ -141,6 +141,8 @@ class Drone(object):
 		self.__VideoProcess		= multiprocessing.Process( target=mainloopV, args=(self.DroneIP,self.VideoPort,self.__VidPipePath,videoChild_pipe,os.getpid()))
 		self.__VideoProcess.start()
 		self.__vDecodeProcess	= multiprocessing.Process( target=vDecode, args=(self.__VidPipePath,self.__vdecodeChild_pipe,os.getpid()))
+		self.__vDecodeProcess.start()
+
 		# There is a third process called "self.__vDecodeProcess" for decoding video, initiated and started around line 880
 
 		# Final settings
@@ -931,11 +933,10 @@ class Drone(object):
 						if cmd == "keypressed":				self.__vKey = VideoImage				# Pressed key on window
 						if cmd == "reset":					self.__Video_pipe.send(cmd)				# proxy to videodecode-process
 						if cmd == "Image":															# Imagedata !
-                                                    print('image')
-                                                    self.__VideoImageCount =		VideoImageCount
-                                                    self.__VideoImage =				VideoImage
-                                                    self.__VideoDecodeTime =		VideoDecodeTime
-                                                    self.__VideoDecodeTimeStamp =	time.time()-self.__startTime
+							self.__VideoImageCount =		VideoImageCount
+							self.__VideoImage =				VideoImage
+							self.__VideoDecodeTime =		VideoDecodeTime
+							self.__VideoDecodeTimeStamp =	time.time()-self.__startTime
 					except:		pass
 				if ip == self.__Video_pipe:		### Receiving feedback from videostream-process
 					try:
@@ -945,6 +946,7 @@ class Drone(object):
 							if not self.__vDecodeRunning:
 								self.__vDecodeProcess = multiprocessing.Process( target=vDecode, args=(self.__VidPipePath,self.__vdecodeChild_pipe,os.getpid()))
 								self.__vDecodeProcess.start()
+#								self.__VideoProcess.start()
 								self.__net_pipes.append(self.__vdecode_pipe)
 								self.__vDecodeRunning = True
 
@@ -1036,85 +1038,87 @@ def watchdogV(parentPID, ownPID):
 
 # Thread to capture, decode and display the video-stream
 def vCapture(VidPipePath, parent_pipe):
-    import cv2
-    global vCruns, commitsuicideV, showVid, lockV, debugV
+	import cv2
+	global vCruns, commitsuicideV, showVid, lockV, debugV
 
-    show = 		False
-    hide =		True
-    vCruns =	True
-    t = 		time.time()
-    parent_pipe.send(("VideoUp",0,0,0))
-    capture = 	cv2.VideoCapture(VidPipePath)
-    #cv2.imshow(',', capture)
-    ImgCount =	0
-    if debugV:	print("CAPTURE: "+str(time.time()-t))
-    time.sleep(0.2)
-    parent_pipe.send(("foundCodec",0,0,0))
-    time.sleep(0.2)
-    declag =	time.time()
-    count =		-3
-    imageXsize = 	0
-    imageYsize = 	0
-    windowName = 	"PS-Drone"
-    codecOK = 		False
-    lastKey =		""
-    cc=0
+	show = 		False
+	hide =		True
+	vCruns =	True
+	t = 		time.time()
+	parent_pipe.send(("VideoUp",0,0,0))
+	capture = 	cv2.VideoCapture(VidPipePath)
+#	capture = 	cv2.VideoCapture("tcp://192.168.1.1:5555")
+	ImgCount =	0
+	if debugV:	print("CAPTURE: "+str(time.time()-t))
+	time.sleep(0.2)
+	parent_pipe.send(("foundCodec",0,0,0))
+	time.sleep(0.2)
+	declag =	time.time()
+	count =		-3
+	imageXsize = 	0
+	imageYsize = 	0
+	windowName = 	"PS-Drone"
+	codecOK = 		False
+	lastKey =		""
+	cc=0
 
-    while not commitsuicideV:
-            decTimeRev = 		time.time()
-            receiveWatchdog = threading.Timer(2.0, VideoReceiveWatchdog, [parent_pipe,"vCapture", debugV])	# Resets video if something hangs
-            receiveWatchdog.start()
-            success, image = 	capture.read()
-            cc	+=1
-            receiveWatchdog.cancel()
-            decTime =			decTimeRev-time.time()
-            tlag =				time.time()-declag
+	while not commitsuicideV:
+		decTimeRev = 		time.time()
+		receiveWatchdog = threading.Timer(2.0, VideoReceiveWatchdog, [parent_pipe,"vCapture", debugV])	# Resets video if something hangs
+		receiveWatchdog.start()
+		success, image = 	capture.read()
+		cc	+=1
+		receiveWatchdog.cancel()
+		decTime =			decTimeRev-time.time()
+		tlag =				time.time()-declag
 
-            if not codecOK and success:
-                    try:
-                            if image.shape[:2]==(360,640) or image.shape[:2]==(368,640) or image.shape[:2]==(720,1280) or image.shape[:2]==(1080,1920):
-                                    codecOK = True
-                                    if debugV:	print("Codec seems OK")
-                            else:
-                                    if debugV:	print("Codec failure")
-                                    parent_pipe.send(("reset",0,0,0))
-                                    commitsuicideV = True
-                    except:
-                                    if debugV:	print("Codec failure")
-                                    parent_pipe.send(("reset",0,0,0))
-                                    commitsuicideV = True
-            if codecOK:
-                    if not (imageXsize == image.shape[1]) or not (imageYsize == image.shape[0]):
-                            cv2.destroyAllWindows()
-                            imageYsize, imageXsize = image.shape[:2]
-                            windowName = "PS-Drone - "+str(imageXsize)+"x"+str(imageYsize)
-                    if success:
-                            if tlag > 0.02:	count+=1
-                            if count > 0:
-                                    ImgCount+=1
-                                    if not show and not hide:
-                                            cv2.destroyAllWindows()
-                                            hide = True
-                                    if show:
-                                            cv2.imshow(windowName, image)
-                                            key=cv2.waitKey(1)
-                                            if key>-1:	parent_pipe.send(("keypressed",0,chr(key%256),0))
-                                    parent_pipe.send(("Image",ImgCount,image,decTime))
-                    else:	time.sleep(0.01)
-                    declag = time.time()
+		if not codecOK and success:
+			
+			try:
+				if image.shape[:2]==(360,640) or image.shape[:2]==(368,640) or image.shape[:2]==(720,1280) or image.shape[:2]==(1080,1920):
+					codecOK = True
+					if debugV:	print("Codec seems OK")
+				else:
+					if debugV:	print("Codec failure")
+					parent_pipe.send(("reset",0,0,0))
+					commitsuicideV = True
+			except:
+					if debugV:	print("Codec failure")
+					parent_pipe.send(("reset",0,0,0))
+					commitsuicideV = True
+					codecOK	= False
+		if success and codecOK:
+			if not (imageXsize == image.shape[1]) or not (imageYsize == image.shape[0]):
+				cv2.destroyAllWindows()
+				imageYsize, imageXsize = image.shape[:2]
+				windowName = "PS-Drone - "+str(imageXsize)+"x"+str(imageYsize)
+			if success:
+				if tlag > 0.02:	count+=1
+				if count > 0:
+					ImgCount+=1
+					if not show and not hide:
+						cv2.destroyAllWindows()
+						hide = True
+					if show:
+						cv2.imshow(windowName, image)
+						key=cv2.waitKey(1)
+						if key>-1:	parent_pipe.send(("keypressed",0,chr(key%256),0))
+					parent_pipe.send(("Image",ImgCount,image,decTime))
+			else:	time.sleep(0.01)
+			declag = time.time()
 
-                    if showVid:
-                            if not show:
-                                    show=True
-                                    cv2.destroyAllWindows()
-                    else:
-                            if show:
-                                    show=False
-                                    cv2.destroyAllWindows()
-    vCruns = False
-    cv2.destroyAllWindows()
-    capture.release()
-    if debugV:	print("vCapture-Thread :    committed suicide")
+			if showVid:
+				if not show:
+					show=True
+					cv2.destroyAllWindows()
+			else:
+				if show:
+					show=False
+					cv2.destroyAllWindows()
+	vCruns = False
+	cv2.destroyAllWindows()
+	capture.release()
+	if debugV:	print("vCapture-Thread :    committed suicide")
 
 ### Process to decode the videostream in the FIFO-Pipe, stored there from main-loop.
 # Storing and decoding must not be processed in the same process, thats why decoding is external.
@@ -1129,19 +1133,21 @@ def vDecode(VidPipePath, parent_pipe, parentPID):
 
 	while not commitsuicideV:
 		in_pipe, out_pipe, dummy2 = select.select([parent_pipe], [], [], 0.1)		# When something is in a pipe...
-		cmd = parent_pipe.recv()
-		if showCommands:	print("** Com -> vDec : ",cmd ,end =" ")
-		if cmd == "die!":			commitsuicideV = True
-		elif cmd == "reset":		commitsuicideV = True
-		elif cmd == "show":			showVid = 		True
-		elif cmd == "hide":			showVid =		False
-		elif cmd == "debug":
-			debugV = True
-			print("vDecode-Process :    running")
-			if vCruns:	print("vCapture-Thread :    running")
-		elif cmd == "undebug":		debugV =		False
-		elif cmd == "showCommands":	showCommands =	True
-		elif cmd == "hideCommands":	showCommands =	False
+		try:
+			cmd = parent_pipe.recv()
+			if showCommands:	print("** Com -> vDec : ",cmd ,end =" ")
+			if cmd == "die!":			commitsuicideV = True
+			elif cmd == "reset":		commitsuicideV = True
+			elif cmd == "show":			showVid = 		True
+			elif cmd == "hide":			showVid =		False
+			elif cmd == "debug":
+				debugV = True
+				print("vDecode-Process :    running")
+				if vCruns:	print("vCapture-Thread :    running")
+			elif cmd == "undebug":		debugV =		False
+			elif cmd == "showCommands":	showCommands =	True
+			elif cmd == "hideCommands":	showCommands =	False
+		except:		pass
 	Thread_vCapture.join()
 	parent_pipe.send(("suicided",0,0,0))
 	time.sleep(0.1)
@@ -1241,7 +1247,7 @@ def mainloopV(DroneIP, VideoPort, VidPipePath, parent_pipe, parentPID):
 						vstream_pipe.setblocking(0)
 						vstream_pipe.connect_ex((DroneIP,VideoPort))
 						pipes.append(vstream_pipe)
-					write2pipe = open(VidPipePath,"wb+",buffering=0)
+					write2pipe = open(VidPipePath,"wb",buffering=0)
 					suicide = False
 					inited = True
 					preinited = False
@@ -1282,102 +1288,94 @@ def mainloopV(DroneIP, VideoPort, VidPipePath, parent_pipe, parentPID):
 			#	 will be send to the decoder, till the proper decoder for the videostream is found.
 			# In case of a slow or midspeed-video, only a single or a few copied I-frames are sent to the decoder.
 			if ip == vstream_pipe:
-                            print('vstream_pipe')
-                            receiveWatchdog = threading.Timer(2.0, VideoReceiveWatchdog, [parent_pipe,"Video Mainloop", debugV,])	# Resets video if something hangs
-                            receiveWatchdog.start()
-                            videoPackage	= vstream_pipe.recv(65535)
-                            #print('videoPackage: ' + str(videoPackage))
-                            receiveWatchdog.cancel()
-                            lenVideoPackage	=len(videoPackage)
-                            if lenVideoPackage == 0:	commitsuicideV = True
-                            else:
-                                if inited and not reset:
-                                    print('inited and not reset')
-                                    ### Analyze raw datastream
-                                    frameStart = False
-                                    if not saveVideo and lenVideoPackage>45 and videoPackage[36:40]=="\x00\x00\x00\x00" and videoPackage[41:44]=="\x00\x01\x00":
-                                    #if not saveVideo and lenVideoPackage>45:
-                                        frameStart		= True
-                                        rawVideoFrame	= VidStreamSnippet
-                                        lastIFrame		= iFrame
-                                        if videoPackage[30] == "\x01":			# I-Frame
-                                            print('first')
-                                            iFrame, unsureMode	= True, False
-                                            VidStreamSnippet	= videoPackage
-                                            FrameCount += 1
-                                        elif videoPackage[30] == "\x03":		# P-Frame
-                                            iFrame = False
-                                            if not unsureMode:
-                                                    if foundCodec:		VidStreamSnippet	= videoPackage
+				receiveWatchdog = threading.Timer(2.0, VideoReceiveWatchdog, [parent_pipe,"Video Mainloop", debugV,])	# Resets video if something hangs
+				receiveWatchdog.start()
+				videoPackage	= vstream_pipe.recv(65535)
+				receiveWatchdog.cancel()
+				lenVideoPackage	=len(videoPackage)
+				if lenVideoPackage == 0:		commitsuicideV = True
+				else:
+					if inited and not reset:
+						### Analyze raw datastream
+						frameStart = False
+						if not saveVideo and lenVideoPackage>45 and videoPackage[36:40].hex()=="00000000" and videoPackage[41:44].hex()=="000100":
+							frameStart		= True
+							rawVideoFrame	= VidStreamSnippet
+							lastIFrame		= iFrame
+							if videoPackage[30] == 1:			# I-Frame
+								iFrame, unsureMode	= True, False
+								VidStreamSnippet	= videoPackage
+								FrameCount += 1
+							elif videoPackage[30] == 3:		# P-Frame
+								iFrame = False
+								if not unsureMode:
+									if foundCodec:		VidStreamSnippet	= videoPackage
 #									else:				VidStreamSnippet   += videoPackage
-                                            FrameCount += 1
-                                        else:
-                                            iFrame				= False
-                                            VidStreamSnippet	= videoPackage
-                                            if debugV:
-                                                    print("*** Odd h264 Frametype: ",FrameCount, end =" ")
-                                                    print(videoPackage[30:50].encode("hex"))
-                                                    print(" - ",videoPackage[31:40].find("\x00\x00\x00"),ord(videoPackage[30]))
-                                    elif not unsureMode:
-                                        print('not unsureMode')
-                                        VidStreamSnippet+=videoPackage		# Merging video-snippets
+								FrameCount += 1
+#								print(FrameCount)
+
+							else:
+								iFrame				= False
+								VidStreamSnippet	= videoPackage
+								if debugV:
+									print("*** Odd h264 Frametype: ",FrameCount, end =" ")
+									print(videoPackage[30:50].encode("hex"))
+									print(" - ",videoPackage[31:40].find("\x00\x00\x00"),ord(videoPackage[30]))
+						elif not unsureMode:
+							VidStreamSnippet+=videoPackage		# Merging video-snippets
 
 
-                                    ### Procress last frame
-                                    # An MPEG4-Stream is not confirmed. Boost or fallback to savemode.
-                                    lenRawVideoFrame	= len(rawVideoFrame)
-                                    print('fallback')
+						### Procress last frame
+						# An MPEG4-Stream is not confirmed. Boost or fallback to savemode.
+						lenRawVideoFrame	= len(rawVideoFrame)
 
-#						print(slowVideo, frameStart, saveVideo, foundCodec, lenRawVideoFrame)
+#						print(slowVideo, frameStart, saveVideo, foundCodec, lenRawVideoFrame
 
-                                    if not saveVideo and unsureMode and frameStart and lastIFrame and lenRawVideoFrame>0:
-                                        print('hi')
-                                        if not searchCodecTime:
-                                                searchCodecTime = time.time()			# Video is freshly initiated
-                                        elif (time.time()-searchCodecTime) > 2.0:	# Waited too long for an MPEG4 stream confirmation...
-                                                saveVideo = True						# ... fall back to savemode
-                                                parent_pipe.send("saveVideo")			# Inform the main process
-                                                unsureMode = False
-                                                foundCodec = True						# switch off codec guess speed-up
-                                    elif not saveVideo and frameStart and not unsureMode and not foundCodec and lenRawVideoFrame>0:
-                                        print('not save, famestart, not unsureMode, not foundCodec')
-                                        # Boost Frames
-                                        boost=((1024*512)/len(VidStreamSnippet))+1
-#							print("Boost IN", len(VidStreamSnippet)
-                                        for i in range(0,boost):
-                                                try: write2pipe.write(rawVideoFrame)
-                                                except: print("Boost ERROR")
-                                        burstFrameCount+=1
-                                        # Give up after to much tries
-                                        if burstFrameCount>10:
-                                                parent_pipe.send(("reset",0,0,0))
-                                                time.sleep(0.2)
-                                                burstFrameCount=0
-                                                if debugV: print("To many pictures send while guessing the codec. Resetting.")
+						if not saveVideo and unsureMode and frameStart and lastIFrame and lenRawVideoFrame>0:
+							if not searchCodecTime:
+								searchCodecTime = time.time()			# Video is freshly initiated
+							elif (time.time()-searchCodecTime) > 2.0:	# Waited too long for an MPEG4 stream confirmation...
+								saveVideo = True						# ... fall back to savemode
+								parent_pipe.send("saveVideo")			# Inform the main process
+								unsureMode = False
+								foundCodec = True						# switch off codec guess speed-up
+						elif not saveVideo and frameStart and not unsureMode and not foundCodec and lenRawVideoFrame>0:
+							# Boost Frames
+							boost=int((1024*512)/len(VidStreamSnippet))+1
+							for i in range(0,boost):
+								try:
+									write2pipe.write(rawVideoFrame)
+									write2pipe.flush()
+								except: pass	#print("Boost ERROR")
+							burstFrameCount+=1
+							# Give up after to much tries
+							if burstFrameCount>10:
+								parent_pipe.send(("reset",0,0,0))
+								time.sleep(0.2)
+								burstFrameCount=0
+								if debugV: print("To many pictures send while guessing the codec. Resetting.")
 
-                                    # Normal Pipeing
-                                    elif not slowVideo and frameStart and (saveVideo or foundCodec) and lenRawVideoFrame>0:
-                                        print('normal video')
-                                        if burstFrameCount==0 and lastIFrame:		burstFrameCount = 1
-                                        if burstFrameCount==1:
-                                                try:	write2pipe.write(rawVideoFrame)
-                                                except: print("Pipe Error")
+						# Normal Pipeing
+						elif not slowVideo and frameStart and (saveVideo or foundCodec) and lenRawVideoFrame>0:
+							if burstFrameCount==0 and lastIFrame:		burstFrameCount = 1
+							if burstFrameCount==1:
+								try:	write2pipe.write(rawVideoFrame)
+								except: pass	#print("Pipe Error")
 
-                                    # Just show the I-Frame for slow-video-mode (and repeat for less delay in midVideo()-mode)
-                                    elif not saveVideo and foundCodec and slowVideo and lastIFrame and lenRawVideoFrame>0:
-                                            for i in range(0,frameRepeat):			write2pipe.write(rawVideoFrame)
-                                    # Save-Mode
-                                    elif saveVideo:						
-                                        print('save video')
-                                        write2pipe.write(videoPackage)
-                                    else:
-                                        print('save video: ' + str(saveVideo))
-                                        print('unsureMode: ' + str(unsureMode))
-                                        print('lenVideoPackage: ' + str(lenVideoPackage))
-                                        print('frameStart: ' + str(frameStart))
-                                        print('lastIFrame: ' + str(lastIFrame))
-                                        print('foundCodec: ' + str(foundCodec))
-                                        print('slowVideo: ' + str(slowVideo))
+						# Just show the I-Frame for slow-video-mode (and repeat for less delay in midVideo()-mode)
+						elif not saveVideo and foundCodec and slowVideo and lastIFrame and lenRawVideoFrame>0:
+							for i in range(0,frameRepeat):
+								try:
+									write2pipe.write(rawVideoFrame)
+									write2pipe.flush()
+								except:			pass
+						# Save-Mode
+						elif saveVideo:
+							try:
+								write2pipe.write(videoPackage)
+#								write2pipe.write(rawVideoFrame)
+								write2pipe.flush()
+							except:				pass
 
 
 	try:
@@ -1389,7 +1387,7 @@ def mainloopV(DroneIP, VideoPort, VidPipePath, parent_pipe, parentPID):
 	try:	vstream_pipe.close()
 	except:	pass
 	try:
-		VidPipe=open(VidPipePath,"r")
+		VidPipe=open(VidPipePath,"rb")
 		r = "1"
 		while len(r):	r=VidPipe.read()
 		FIFO.close()
@@ -2101,67 +2099,44 @@ if __name__ == "__main__":
 ### Here you can write your first test-codes and play around with them
 ###
 
-    import time
-    #import ps_drone
+	import time
+	import ps_drone
 
-    drone = Drone()								# Start using drone
-    drone.printBlue("Battery: ")
+	drone = ps_drone.Drone()								# Start using drone
+	drone.printBlue("Battery: ")
 
-    drone.startup()											# Connects to drone and starts subprocesses
-    drone.reset()											# Always good, at start
+	drone.startup()											# Connects to drone and starts subprocesses
+	drone.reset()											# Always good, at start
 
-    while drone.getBattery()[0] == -1:  time.sleep(0.1)		# Waits until the drone has done its reset
-    time.sleep(0.5)											# Give it some time to fully awake
+	while drone.getBattery()[0] == -1:	time.sleep(0.1)		# Waits until the drone has done its reset
+	time.sleep(0.5)											# Give it some time to fully awake
 
-    drone.useDemoMode(True)
-    drone.getNDpackage(['demo', 'vision detect'])
-    time.sleep(0.5)
+	drone.printBlue("Battery: "+str(drone.getBattery()[0])+"%  "+str(drone.getBattery()[1]))	# Gives a battery-status
 
-    CDC = drone.ConfigDataCount
-    drone.setConfigAllID()
-    drone.sdVideo()
-    #drone.mp4Video()
-    #drone.hdVideo()
-    drone.frontCam()
-    #time.sleep(3)
-    while CDC==drone.ConfigDataCount: time.sleep(0.001)
-    drone.startVideo()
-    drone.showVideo()
+	stop = False
+	while not stop:
+		key = drone.getKey()
+		if key == " ":
+			if drone.NavData["demo"][0][2] and not drone.NavData["demo"][0][3]:	drone.takeoff()
+			else:																drone.land()
+		elif key == "0":	drone.hover()
+		elif key == "w":	drone.moveForward()
+		elif key == "s":	drone.moveBackward()
+		elif key == "a":	drone.moveLeft()
+		elif key == "d":	drone.moveRight()
+		elif key == "q":	drone.turnLeft()
+		elif key == "e":	drone.turnRight()
+		elif key == "7":	drone.turnAngle(-10,1)
+		elif key == "9":	drone.turnAngle( 10,1)
+		elif key == "4":	drone.turnAngle(-45,1)
+		elif key == "6":	drone.turnAngle( 45,1)
+		elif key == "1":	drone.turnAngle(-90,1)
+		elif key == "3":	drone.turnAngle( 90,1)
+		elif key == "8":	drone.moveUp()
+		elif key == "2":	drone.moveDown()
+		elif key == "*":	drone.doggyHop()
+		elif key == "+":	drone.doggyNod()
+		elif key == "-":	drone.doggyWag()
+		elif key != "":		stop = True
 
-    drone.printBlue("Battery: "+str(drone.getBattery()[0])+"%  "+str(drone.getBattery()[1]))	# Gives a battery-status
-
-    stop = False
-    while not stop:
-            key = drone.getKey()
-            if key == " ":
-                    if drone.NavData["demo"][0][2] and not drone.NavData["demo"][0][3]:	drone.takeoff()
-                    else:																drone.land()
-            elif key == "0":	drone.hover()
-            elif key == "w":	drone.moveForward()
-            elif key == "s":	drone.moveBackward()
-            elif key == "a":	drone.moveLeft()
-            elif key == "d":	drone.moveRight()
-            elif key == "q":	drone.turnLeft()
-            elif key == "e":	drone.turnRight()
-            elif key == "7":	drone.turnAngle(-10,1)
-            elif key == "9":	drone.turnAngle( 10,1)
-            elif key == "4":	drone.turnAngle(-45,1)
-            elif key == "6":	drone.turnAngle( 45,1)
-            elif key == "1":	drone.turnAngle(-90,1)
-            elif key == "3":	drone.turnAngle( 90,1)
-            elif key == "8":	drone.moveUp()
-            elif key == "2":	drone.moveDown()
-            elif key == "*":	drone.doggyHop()
-            elif key == "+":	drone.doggyNod()
-            elif key == "-":	drone.doggyWag()
-            elif key == "n":
-                drone.setSpeed(drone.speed/2)
-                print(str(drone.speed))
-            elif key == "m":
-                drone.setSpeed(drone.speed*2)
-                print(str(drone.speed))
-            elif key == "p":
-                print('image count: ' + str(drone.VideoImageCount))
-            elif key != "":		stop = True
-
-    print("Batterie: "+str(drone.getBattery()[0])+"%  "+str(drone.getBattery()[1]))	# Gives a battery-status
+	print("Batterie: "+str(drone.getBattery()[0])+"%  "+str(drone.getBattery()[1]))	# Gives a battery-status
