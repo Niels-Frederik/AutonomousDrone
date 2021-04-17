@@ -16,7 +16,8 @@ from collisionAvoider import CollisionAvoider
 from collisionAvoiderDepthImage import CollisionAvoiderDepthImage
 from depthEstimator import DepthEstimator
 from depthEstimatorDepthImage import DepthEstimatorDepthImage
-import DroneController
+from droneController import DroneController
+from controller import Controller
 import depthEstimator
 import RoutePlanner
 import VideoIO
@@ -44,8 +45,11 @@ class Main():
 
     def initializeHelpers(self, useDepthImage):
         if self.live:
-            frame = VideoIO.captureScreen()
+            self.droneController = DroneController(self.debug)
+            self.droneController.getNewImage()
+            #frame = VideoIO.captureScreen()
         else:
+            self.droneController = Controller(self.debug)
             _, frame = self.video.read()
         self.camera = Camera('./Calibration/outputs/', frame)
         if useDepthImage:
@@ -75,8 +79,9 @@ class Main():
 
     def runLive(self):
         while True:
-            frame = VideoIO.captureScreen()
-            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            #frame = VideoIO.captureScreen()
+            #frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            frame = self.droneController.getNewImage()
             if self.frameNumber%60 == 0:
                 self.handleFrame(frame)
             self.frameNumber += 1
@@ -85,7 +90,8 @@ class Main():
         #depthImage = depthEstimator.estimateDepthImage(frame, self.debug)
         depthImage = self.depthEstimator.estimateDepth(frame)
         self.collisionAvoider.avoidCollisions(depthImage)
-        DroneController.control()
+        #DroneController.control()
+        self.droneController.takeoff()
         self.visualizer(frame, depthImage)
 
     def visualizer(self, frame, processedFrame):
