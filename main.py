@@ -53,15 +53,13 @@ class Main():
             _, frame = self.video.read()
         self.camera = Camera('./Calibration/outputs/', frame)
         if useDepthImage:
-            #Initialize depthEstimatorDepthImage
             self.depthEstimator = DepthEstimatorDepthImage(self.debug)
             depthImage = self.depthEstimator.estimateDepth(frame)
-            self.collisionAvoider = CollisionAvoiderDepthImage(depthImage, self.debug)
+            self.collisionAvoider = CollisionAvoiderDepthImage(depthImage, self.droneController, self.debug)
             #Visualizer
         else:
-            #initialize default depthEstimator
             self.depthEstimator = DepthEstimator(self.debug)
-            self.collisionAvoider = CollisionAvoider(self.debug)
+            self.collisionAvoider = CollisionAvoider(self.droneController, self.debug)
             #Visualizer
 
     def start(self):
@@ -87,11 +85,8 @@ class Main():
             self.frameNumber += 1
 
     def handleFrame(self, frame):
-        #depthImage = depthEstimator.estimateDepthImage(frame, self.debug)
         depthImage = self.depthEstimator.estimateDepth(frame)
         self.collisionAvoider.avoidCollisions(depthImage)
-        #DroneController.control()
-        self.droneController.takeoff()
         self.visualizer(frame, depthImage)
 
     def visualizer(self, frame, processedFrame):

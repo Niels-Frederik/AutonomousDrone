@@ -31,27 +31,36 @@ class DroneController(Controller):
 
     def stop(self):
         self.drone.hover()
+        super().stop()
 
     def takeoff(self):
         self.drone.takeoff()
+        super().takeoff()
 
     def land(self):
         self.drone.land()
+        super().land()
 
     def rotateLeft(self):
         self.drone.turnLeft()
+        super().rotateLeft()
 
     def rotateRight(self):
         self.drone.turnRight()
+        super().rotateRight()
 
     def moveForward(self):
         self.drone.moveForward()
+        super().moveForward()
 
     def moveBackward(self):
         self.drone.moveBackward()
+        super().moveBackward()
 
     def moveLeft(self):
         self.drone.moveLeft()
+        super().moveLeft()
 
     def moveRight(self):
         self.drone.moveRight()
+        super().moveRight()

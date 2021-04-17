@@ -1,14 +1,18 @@
 import cv2
 from collisionAvoider import CollisionAvoider
+import droneController
+import controller
+
 
 class CollisionAvoiderDepthImage(CollisionAvoider):
-    def __init__(self, frame, debug):
+    def __init__(self, frame, droneController, debug):
+        self.debug = debug
+        self.droneController = droneController
         self.scaleFactor = 32
         self.threshold = 0.25
         self.shift = int(self.scaleFactor/2)
         self.height = int(frame.shape[0]/self.scaleFactor)
         self.width = int(frame.shape[1]/self.scaleFactor)
-        self.debug = debug
         if debug:
             self.originalWidth = self.width*self.scaleFactor
             self.originalHeight = self.height*self.scaleFactor
@@ -44,22 +48,29 @@ class CollisionAvoiderDepthImage(CollisionAvoider):
 
     def directionFromPoint(self, x, y, maxValue):
         if maxValue < self.threshold:
-            print('no viable path')
-            print(maxValue)
-            return 'stop'
+            if self.debug:
+                print('no viable path')
+                print(maxValue)
+                self.droneController.stop()
+                return
 
         #determine how to get there
         if x > self.upperXBound:
-            print('right')
+            self.droneController.rotateRight()
         elif x < self.lowerXBound:
-            print('left')
-        else: print('no x axis changes required')
+            self.droneController.rotateLeft()
+        else:
+            self.droneController.moveForward()
 
         if y > self.upperYBound:
-            print('down')
+            #print('down')
+            pass
         elif y < self.lowerYBound:
-            print('up')
-        else: print('no y axis changes required')
+            #print('up')
+            pass
+        else:
+            #print('no y axis changes required')
+            pass
 
 def findClosestSafeDirection(frame):
     #Need a threshold
