@@ -108,6 +108,8 @@ env/
 venv/
 ENV/
 Env/
+*Env/
+*Venv/
 env.bak/
 venv.bak/
 
@@ -138,4 +140,4 @@ out/
 !Env/requirements.txt
 *.swp
 Output/*
-DepthEstimation/DenseDepth/nyu.5
+DepthEstimation/DenseDepth/nyu.h5
