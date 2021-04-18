@@ -1,5 +1,6 @@
 import psdrone3
 import cv2
+import time
 from controller import Controller
 
 class DroneController(Controller):
@@ -19,18 +20,20 @@ class DroneController(Controller):
         drone.showVideo()
         self.drone = drone
         self.IMC = drone.VideoImageCount
+        super().__init__(debug)
 
     def getNewImage(self):
         while self.drone.VideoImageCount == self.IMC: time.sleep(0.01) # wait for new frame
-        self.IMC = drone.VideoImageCount
-        img = drone.VideoImage
-        if debug:
+        self.IMC = self.drone.VideoImageCount
+        img = self.drone.VideoImage
+        if self.debug:
             cv2.imshow('droneFrame', img)
             cv2.waitKey(1)
         return img
 
     def stop(self):
         self.drone.hover()
+        self.rotateRight()
         super().stop()
 
     def takeoff(self):

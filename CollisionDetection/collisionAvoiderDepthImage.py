@@ -13,14 +13,13 @@ class CollisionAvoiderDepthImage(CollisionAvoider):
         self.shift = int(self.scaleFactor/2)
         self.height = int(frame.shape[0]/self.scaleFactor)
         self.width = int(frame.shape[1]/self.scaleFactor)
-        if debug:
-            self.originalWidth = self.width*self.scaleFactor
-            self.originalHeight = self.height*self.scaleFactor
-            downScaledShift = self.shift/self.scaleFactor
-            self.upperXBound = self.width/2 + self.width*0.1 - downScaledShift
-            self.lowerXBound = self.width/2 - self.width*0.1 - downScaledShift
-            self.upperYBound = self.height/2 + self.height*0.1 - downScaledShift
-            self.lowerYBound = self.height/2 - self.height*0.1 - downScaledShift
+        self.originalWidth = self.width*self.scaleFactor
+        self.originalHeight = self.height*self.scaleFactor
+        downScaledShift = self.shift/self.scaleFactor
+        self.upperXBound = self.width/2 + self.width*0.1 - downScaledShift
+        self.lowerXBound = self.width/2 - self.width*0.1 - downScaledShift
+        self.upperYBound = self.height/2 + self.height*0.1 - downScaledShift
+        self.lowerYBound = self.height/2 - self.height*0.1 - downScaledShift
 
     def avoidCollisions(self, frame):
         downScaledFrame = cv2.resize(frame, (self.width, self.height))
@@ -44,7 +43,7 @@ class CollisionAvoiderDepthImage(CollisionAvoider):
             cv2.imshow('h', frameOriginSized)
             cv2.circle(frameOriginSized, (x*self.scaleFactor + self.shift, y*self.scaleFactor + self.shift), 8, (1, 0, 0), 5)
             cv2.imshow('j', frameOriginSized)
-            cv2.waitKey(0)
+            cv2.waitKey(1)
 
     def directionFromPoint(self, x, y, maxValue):
         if maxValue < self.threshold:

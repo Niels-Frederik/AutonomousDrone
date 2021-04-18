@@ -18,6 +18,7 @@ from depthEstimator import DepthEstimator
 from depthEstimatorDepthImage import DepthEstimatorDepthImage
 from droneController import DroneController
 from controller import Controller
+from visualizer import Visualizer
 import depthEstimator
 import RoutePlanner
 import VideoIO
@@ -34,6 +35,7 @@ class Main():
 
         self.initializeVideo(videoPath)
         self.socket = getSocket(remoteTest)
+        self.visualizer = Visualizer(localTest, remoteTest, self.socket)
         self.initializeHelpers(useDepthImage)
 
     def initializeVideo(self, videoPath):
@@ -46,7 +48,7 @@ class Main():
     def initializeHelpers(self, useDepthImage):
         if self.live:
             self.droneController = DroneController(self.debug)
-            self.droneController.getNewImage()
+            frame = self.droneController.getNewImage()
             #frame = VideoIO.captureScreen()
         else:
             self.droneController = Controller(self.debug)
@@ -64,6 +66,7 @@ class Main():
 
     def start(self):
         if self.live:
+            self.droneController.takeoff()
             self.runLive()
         else:
             self.runVideo()
@@ -87,27 +90,7 @@ class Main():
     def handleFrame(self, frame):
         depthImage = self.depthEstimator.estimateDepth(frame)
         self.collisionAvoider.avoidCollisions(depthImage)
-        self.visualizer(frame, depthImage)
-
-    def visualizer(self, frame, processedFrame):
-        #cv2.imshow('screen', frame)
-        #cv2.imshow('processed', processedFrame)
-
-        #frame = pil.fromarray(frame)
-        #frame = frame.resize((640, 320), pil.LANCZOS)
-        #frame = np.array(frame)
-        #frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        #stacked = np.hstack((frame, processedFrame[0]))
-        stacked = processedFrame
-
-        if self.remoteTest and self.socket != None:
-            self.socket.sendMessage('test1', stacked)
-
-        if self.localTest:
-            cv2.imshow('stacked', stacked)
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-                cv2.destroyAllWindows()
-                exit()
+        self.visualizer.visualize(frame, depthImage)
 
 def getSocket(remoteTest):
     if remoteTest:
@@ -124,7 +107,8 @@ if __name__ == '__main__':
     localTest = True
     remoteTest = False
     debug = True
-    main = Main(localTest, remoteTest, debug, videoPath, useDepthImage=True)
+    #main = Main(localTest, remoteTest, debug, videoPath, useDepthImage=True)
+    main = Main(localTest, remoteTest, debug, useDepthImage=True)
     main.start()
     #start(video, localTest, remoteTest, debug)
     #start('Source/Video/IndoorDrone.mp4', True)
