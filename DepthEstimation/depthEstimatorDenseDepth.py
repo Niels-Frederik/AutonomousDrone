@@ -1,10 +1,10 @@
 
 
 from depthEstimator import DepthEstimator
-from denseDepth import DenseDepth
 
-class DepthEstimatorDepthImage(DepthEstimator):
+class DepthEstimatorDenseDepth(DepthEstimator):
     def __init__(self, debug):
+        from denseDepth import DenseDepth
         #Make variable for using other depth image machine learning models
         self.debug = debug
         self.denseDepth = DenseDepth()

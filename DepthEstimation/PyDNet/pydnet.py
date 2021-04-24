@@ -8,83 +8,85 @@ from utils import *
 from pydnetModel import *
 
 # forces tensorflow to run on CPU
-os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 
-parser = argparse.ArgumentParser(description='Argument parser')
+class Pydnet():
+    def __init__(self):
+        os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
+        self.width = 512
+        self.height = 256
+        self.resolution = 1 #1:H, 2:Q, 3:E
+        self.checkpoint_dir = './DepthEstimation/PyDNet/checkpoint/IROS18/pydnet'
+        from os import path
+        with tf.Graph().as_default():
+            self.placeholders = {'im0':tf.placeholder(tf.float32,[None, None, None, 3], name='im0')}
+            with tf.variable_scope("model") as scope:
+              self.model = pydnet(self.placeholders)
 
-""" Arguments related to network architecture"""
-parser.add_argument('--width', dest='width', type=int, default=512, help='width of input images')
-parser.add_argument('--height', dest='height', type=int, default=256, help='height of input images')
-parser.add_argument('--resolution', dest='resolution', type=int, default=1, help='resolution [1:H, 2:Q, 3:E]')
-parser.add_argument('--checkpoint_dir', dest='checkpoint_dir', type=str, default='checkpoint/IROS18/pydnet', help='checkpoint directory')
+            init = tf.group(tf.global_variables_initializer(),
+                           tf.local_variables_initializer())
+            self.loader = tf.train.Saver()
+            self.sess = tf.Session()
+            self.sess.run(init)
+            self.loader.restore(self.sess, self.checkpoint_dir)
 
-args = parser.parse_args()
+    def processImage(self, frame):
+        img = cv2.resize(frame, (self.width, self.height)).astype(np.float32)/255.
+        img = np.expand_dims(img, 0)
+        disp = self.sess.run(self.model.results[self.resolution-1], feed_dict={self.placeholders['im0']: img})
+        #cv2.imshow('l', disp)
+        #cv2.waitKey(0)
+        disp_color = applyColorMap(disp[0,:,:,0]*20, 'plasma')
+        cv2.imshow('p', disp_color)
+        cv2.waitKey(100)
+        #depthImage = (np.concatenate((img[0], disp_color), 0)*255.).astype(np.uint8)
+        #depthImage = cv2.resize(depthImage, (frame.shape[1], frame.shape[0]))
+        #return depthImage
+        return disp_color
 
 def main(_):
+    os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 
-  with tf.Graph().as_default():
-    height = args.height
-    width = args.width
-    placeholders = {'im0':tf.placeholder(tf.float32,[None, None, None, 3], name='im0')}
+    parser = argparse.ArgumentParser(description='Argument parser')
+    """ Arguments related to network architecture"""
+    parser.add_argument('--width', dest='width', type=int, default=512, help='width of input images')
+    parser.add_argument('--height', dest='height', type=int, default=256, help='height of input images')
+    parser.add_argument('--resolution', dest='resolution', type=int, default=1, help='resolution [1:H, 2:Q, 3:E]')
+    parser.add_argument('--checkpoint_dir', dest='checkpoint_dir', type=str, default='checkpoint/IROS18/pydnet', help='checkpoint directory')
 
-    with tf.variable_scope("model") as scope:
-      model = pydnet(placeholders)
+    args = parser.parse_args()
 
-    init = tf.group(tf.global_variables_initializer(),
-                   tf.local_variables_initializer())
+    with tf.Graph().as_default():
+        height = args.height
+        width = args.width
+        placeholders = {'im0':tf.placeholder(tf.float32,[None, None, None, 3], name='im0')}
 
-    loader = tf.train.Saver()
-    saver = tf.train.Saver()
+        with tf.variable_scope("model") as scope:
+          model = pydnet(placeholders)
 
-    with tf.Session() as sess:
-        sess.run(init)
-        loader.restore(sess, args.checkpoint_dir)
-        #folder = '/home/yarl/Desktop/Github/AutonomousDrone/Output/ipadVideo'
-        folder = '/home/yarl/Desktop/Github/AutonomousDrone/Output/droneVideo3.0'
-        for filename in os.listdir(folder):
-            img = cv2.imread(os.path.join(folder, filename))
-            img = cv2.resize(img, (width, height)).astype(np.float32)/255.
-            img = np.expand_dims(img, 0)
-            start = time.time()
-            disp = sess.run(model.results[args.resolution-1], feed_dict={placeholders['im0']: img})
-            end = time.time()
+        init = tf.group(tf.global_variables_initializer(),
+                       tf.local_variables_initializer())
 
-            disp_color = applyColorMap(disp[0,:,:,0]*20, 'plasma')
-            toShow = (np.concatenate((img[0], disp_color), 0)*255.).astype(np.uint8)
-            toShow = cv2.resize(toShow, (int(width/2), int(height)))
+        loader = tf.train.Saver()
 
-            cv2.imshow('pydnet', toShow)
-            cv2.waitKey(1)
+        with tf.Session() as sess:
+            sess.run(init)
+            loader.restore(sess, args.checkpoint_dir)
+            #folder = '/home/yarl/Desktop/Github/AutonomousDrone/Output/ipadVideo'
+            folder = '/home/yarl/Desktop/Github/AutonomousDrone/Output/droneVideo3.0'
+            for filename in os.listdir(folder):
+                img = cv2.imread(os.path.join(folder, filename))
+                img = cv2.resize(img, (width, height)).astype(np.float32)/255.
+                img = np.expand_dims(img, 0)
+                start = time.time()
+                disp = sess.run(model.results[args.resolution-1], feed_dict={placeholders['im0']: img})
+                end = time.time()
 
-    return
-    cam = cv2.VideoCapture(0)
-    with tf.Session() as sess:
-        sess.run(init)
-        loader.restore(sess, args.checkpoint_dir)
-        while True:
-          img = cv2.resize(img, (width, height)).astype(np.float32) / 255.
-          img = np.expand_dims(img, 0)
-          start = time.time()
-          disp = sess.run(model.results[args.resolution-1], feed_dict={placeholders['im0']: img})
-          end = time.time()
+                disp_color = applyColorMap(disp[0,:,:,0]*20, 'plasma')
+                toShow = (np.concatenate((img[0], disp_color), 0)*255.).astype(np.uint8)
+                toShow = cv2.resize(toShow, (int(width/2), int(height)))
 
-          disp_color = applyColorMap(disp[0,:,:,0]*20, 'plasma')
-          toShow = (np.concatenate((img[0], disp_color), 0)*255.).astype(np.uint8)
-          toShow = cv2.resize(toShow, (width/2, height))
-
-          cv2.imshow('pydnet', toShow)
-          k = cv2.waitKey(1)
-          if k == 1048603 or k == 27:
-            break  # esc to quit
-          if k == 1048688:
-            cv2.waitKey(0) # 'p' to pause
-
-          print("Time: " + str(end - start))
-          del img
-          del disp
-          del toShow
-
-        cam.release()
+                cv2.imshow('pydnet', toShow)
+                cv2.waitKey(1)
 
 if __name__ == '__main__':
     tf.app.run()

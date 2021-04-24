@@ -9,7 +9,7 @@ class CollisionAvoiderDepthImage(CollisionAvoider):
         self.debug = debug
         self.droneController = droneController
         self.scaleFactor = 32
-        self.threshold = 0.25
+        self.threshold = 0.30
         self.shift = int(self.scaleFactor/2)
         self.height = int(frame.shape[0]/self.scaleFactor)
         self.width = int(frame.shape[1]/self.scaleFactor)

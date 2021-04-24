@@ -4,7 +4,7 @@ from matplotlib import pyplot as plt
 import imageComparison as IC
 from FeatureMatcher import FeatureMatcher
 import ANMS
-import denseDepth
+#import denseDepth
 
 class DepthEstimator():
     def __init__(self, debug):
@@ -13,13 +13,6 @@ class DepthEstimator():
     def estimateDepth(self, frame):
         #Add the depth estimation we have from main to make it compatible with nonMachineLearning
         pass
-
-featureMatcher = FeatureMatcher()
-def estimateDepthImage(frame, test):
-    print('this is the depth estimator')
-
-    depthImage = denseDepth.processImage(frame)
-    return depthImage
 
 def estimateDepthFeatureMatcher(frame, test):
     if featureMatcher == None:
@@ -49,6 +42,7 @@ def disparity(img2, img1):
 
 
 if __name__ == '__main__':
+    featureMatcher = FeatureMatcher()
     img1 = loadImage('../Source/test7.png')
     img2 = loadImage('../Source/test8.png')
 

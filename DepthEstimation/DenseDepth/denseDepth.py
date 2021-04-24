@@ -13,8 +13,8 @@ import numpy as np
 # Keras / TensorFlow
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '5'
 from keras.models import load_model
-from layers import BilinearUpSampling2D
-from utils import predict, load_images, load_image, display_images
+from DenseDepth.layers import BilinearUpSampling2D
+from DenseDepth.utils import predict, load_images, load_image, display_images
 from matplotlib import pyplot as plt
 
 class DenseDepth():

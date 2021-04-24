@@ -11,11 +11,13 @@ sys.path.insert(0, os.path.abspath(os.path.dirname('DepthEstimation/')))
 sys.path.insert(0, os.path.abspath(os.path.dirname('RoutePlanner/')))
 sys.path.insert(0, os.path.abspath(os.path.dirname('Calibration/')))
 sys.path.insert(0, os.path.abspath(os.path.dirname('DepthEstimation/DenseDepth/')))
+sys.path.insert(0, os.path.abspath(os.path.dirname('DepthEstimation/PyDNet/')))
 
 from collisionAvoider import CollisionAvoider
 from collisionAvoiderDepthImage import CollisionAvoiderDepthImage
 from depthEstimator import DepthEstimator
-from depthEstimatorDepthImage import DepthEstimatorDepthImage
+from depthEstimatorDenseDepth import DepthEstimatorDenseDepth
+from depthEstimatorPydnet import DepthEstimatorPydnet
 from droneController import DroneController
 from controller import Controller
 from visualizer import Visualizer
@@ -27,7 +29,7 @@ from Connection import Connector
 import PIL.Image as pil
 
 class Main():
-    def __init__(self, localTest, remoteTest, debug, videoPath = None, useDepthImage = False):
+    def __init__(self, localTest, remoteTest, debug, videoPath = None, mode = 0):
         self.localTest = localTest
         self.remoteTest = remoteTest
         self.debug = debug
@@ -36,7 +38,7 @@ class Main():
         self.initializeVideo(videoPath)
         self.socket = getSocket(remoteTest)
         self.visualizer = Visualizer(localTest, remoteTest, self.socket)
-        self.initializeHelpers(useDepthImage)
+        self.initializeHelpers(mode)
 
     def initializeVideo(self, videoPath):
         if videoPath != None:
@@ -45,7 +47,7 @@ class Main():
         else:
             self.live = True
 
-    def initializeHelpers(self, useDepthImage):
+    def initializeHelpers(self, mode):
         if self.live:
             self.droneController = DroneController(self.debug)
             frame = self.droneController.getNewImage()
@@ -54,15 +56,21 @@ class Main():
             self.droneController = Controller(self.debug)
             _, frame = self.video.read()
         self.camera = Camera('./Calibration/outputs/', frame)
-        if useDepthImage:
-            self.depthEstimator = DepthEstimatorDepthImage(self.debug)
-            depthImage = self.depthEstimator.estimateDepth(frame)
-            self.collisionAvoider = CollisionAvoiderDepthImage(depthImage, self.droneController, self.debug)
-            #Visualizer
-        else:
+
+        #check mode - 0=feature, 1=densedepth, 2=pydnet
+        if mode == 0:
             self.depthEstimator = DepthEstimator(self.debug)
             self.collisionAvoider = CollisionAvoider(self.droneController, self.debug)
             #Visualizer
+        elif mode == 1:
+            self.depthEstimator = DepthEstimatorDenseDepth(self.debug)
+            depthImage = self.depthEstimator.estimateDepth(frame)
+            self.collisionAvoider = CollisionAvoiderDepthImage(depthImage, self.droneController, self.debug)
+            #Visualizer
+        elif mode == 2:
+            self.depthEstimator = DepthEstimatorPydnet(self.debug)
+            depthImage = self.depthEstimator.estimateDepth(frame)
+            self.collisionAvoider = CollisionAvoiderDepthImage(depthImage, self.droneController, self.debug)
 
     def start(self):
         if self.live:
@@ -74,18 +82,20 @@ class Main():
     def runVideo(self):
         while True:
             _, frame = self.video.read()
-            if self.frameNumber%60 == 0:
-                self.handleFrame(frame)
-            self.frameNumber += 1
+            self.handleFrame(frame)
+            #if self.frameNumber%60 == 0:
+                #self.handleFrame(frame)
+            #self.frameNumber += 1
 
     def runLive(self):
         while True:
             #frame = VideoIO.captureScreen()
             #frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             frame = self.droneController.getNewImage()
-            if self.frameNumber%60 == 0:
-                self.handleFrame(frame)
-            self.frameNumber += 1
+            #if self.frameNumber%60 == 0:
+                #self.handleFrame(frame)
+            #self.frameNumber += 1
+            self.handleFrame(frame)
 
     def handleFrame(self, frame):
         depthImage = self.depthEstimator.estimateDepth(frame)
@@ -108,11 +118,7 @@ if __name__ == '__main__':
     remoteTest = False
     debug = True
     #main = Main(localTest, remoteTest, debug, videoPath, useDepthImage=True)
-    main = Main(localTest, remoteTest, debug, useDepthImage=True)
+    main = Main(localTest, remoteTest, debug, videoPath, mode=2)
     main.start()
     #start(video, localTest, remoteTest, debug)
-    #start('Source/Video/IndoorDrone.mp4', True)
-    #start('Source/Video/IMG_0460.mp4', True)
-    #start('Source/Video/IMG_0463.mp4', True, True)
-    #start('Source/Video/droneVideo4.0.mp4', True)
 
