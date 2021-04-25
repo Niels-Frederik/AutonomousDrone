@@ -140,4 +140,4 @@ out/
 !Env/requirements.txt
 *.swp
 Output/*
-DepthEstimation/DenseDepth/nyu.h5
+*/DepthEstimation/DenseDepth/nyu.h5
