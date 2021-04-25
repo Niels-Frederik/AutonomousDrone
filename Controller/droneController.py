@@ -16,7 +16,8 @@ class DroneController(Controller):
         drone.frontCam()
         CDC = drone.ConfigDataCount
         while CDC == drone.ConfigDataCount: time.sleep(0.0001)
-        drone.setSpeed(0.050)
+        drone.setSpeed(0.075)
+        drone.videoFPS(10)
         drone.startVideo()
         drone.showVideo()
         self.drone = drone

@@ -27,6 +27,8 @@ class CollisionAvoiderDepthImage(CollisionAvoider):
 
     def findSafestDirection(self, frame, scaleFactor):
         maxValue = 0
+        x = 0
+        y = 0
         if self.debug: frameOriginSized = cv2.resize(frame, (self.originalWidth, self.originalHeight))
 
         for i in range(2, self.height-2):

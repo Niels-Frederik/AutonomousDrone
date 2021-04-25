@@ -36,12 +36,27 @@ class Pydnet():
         #cv2.imshow('l', disp)
         #cv2.waitKey(0)
         disp_color = applyColorMap(disp[0,:,:,0]*20, 'plasma')
-        cv2.imshow('p', disp_color)
-        cv2.waitKey(100)
+        #cv2.imshow('p', disp_color)
+        #cv2.waitKey(100)
+
+        r = disp_color.copy()
+        for i in range(len(r)):
+            for j in range(len(r[i])):
+                #r[i, j, 0] = r[i, j, 0]/r[i, j, 1] * 255
+                r[i, j, 0] = (r[i, j, 0]-r[i, j, 1]) * 2
+
+        r[:, :, 1] = 0
+        r[:, :, 2] = 0
+        output = cv2.cvtColor(r, cv2.COLOR_RGB2GRAY)
+
+        #cv2.imshow('k', output)
+        #cv2.waitKey(0)
         #depthImage = (np.concatenate((img[0], disp_color), 0)*255.).astype(np.uint8)
         #depthImage = cv2.resize(depthImage, (frame.shape[1], frame.shape[0]))
         #return depthImage
-        return disp_color
+        #return disp_color
+        output = cv2.resize(output, (320, 240))
+        return output
 
 def main(_):
     os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
@@ -86,7 +101,7 @@ def main(_):
                 toShow = cv2.resize(toShow, (int(width/2), int(height)))
 
                 cv2.imshow('pydnet', toShow)
-                cv2.waitKey(1)
+                cv2.waitKey(1000)
 
 if __name__ == '__main__':
     tf.app.run()

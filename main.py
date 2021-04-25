@@ -117,8 +117,8 @@ if __name__ == '__main__':
     localTest = True
     remoteTest = False
     debug = True
-    #main = Main(localTest, remoteTest, debug, videoPath, useDepthImage=True)
-    main = Main(localTest, remoteTest, debug, videoPath, mode=2)
+    main = Main(localTest, remoteTest, debug, mode=2)
+    #main = Main(localTest, remoteTest, debug, videoPath, mode=2)
     main.start()
     #start(video, localTest, remoteTest, debug)
 
