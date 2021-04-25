@@ -18,9 +18,9 @@ def loadImage(path):
     img = cv2.imread(path)
     return img
 
-def saveImage(image):
+def saveImage(name, image):
     #image = cv2.resize(image, (1280, 1024), interpolation=cv2.INTER_CUBIC)
-    cv2.imwrite('vignette.jpg', image)
+    cv2.imwrite(name, image)
 
 
 def loadVideo(path):
@@ -78,5 +78,5 @@ if __name__ == '__main__':
     from Camera import Camera
     #captureScreenLive()
     #video = loadVideo('../Source/Video/droneVideo4.0.mp4')
-    video = loadVideo('../Source/Video/ipadVideo.mp4')
-    saveEachImageInVideo(video, '../Output/ipadVideoUncalibrated', False)
+    video = loadVideo('../../Source/Video/ipadVideo.mp4')
+    saveEachImageInVideo(video, '../../Output/ipadVideoUncalibrated', False)

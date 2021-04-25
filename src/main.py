@@ -113,12 +113,12 @@ def getSocket(remoteTest):
     return None
 
 if __name__ == '__main__':
-    videoPath = 'Source/Video/droneVideo4.0.mp4'
+    videoPath = '../Source/Video/droneVideo4.0.mp4'
     localTest = True
     remoteTest = False
     debug = True
-    main = Main(localTest, remoteTest, debug, mode=2)
-    #main = Main(localTest, remoteTest, debug, videoPath, mode=2)
+    #main = Main(localTest, remoteTest, debug, mode=2)
+    main = Main(localTest, remoteTest, debug, videoPath, mode=2)
     main.start()
     #start(video, localTest, remoteTest, debug)
 

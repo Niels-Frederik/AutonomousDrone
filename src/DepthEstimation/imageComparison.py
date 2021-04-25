@@ -112,7 +112,7 @@ def splitColorBoxOnPosition(colorBoxes):
 
 if __name__ == '__main__':
     import VideoIO
-    image1 = VideoIO.loadImage('../Source/Images/indoor1.png')
+    image1 = VideoIO.loadImage('../../Source/Images/indoor1.png')
     #image1 = VideoIO.loadImage('../Source/Images/Strawberries.jpg')
     #image1 = VideoIO.loadImage('../Source/Images/red.png')
     while(True):

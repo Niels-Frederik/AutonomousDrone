@@ -87,7 +87,8 @@ def main(_):
             sess.run(init)
             loader.restore(sess, args.checkpoint_dir)
             #folder = '/home/yarl/Desktop/Github/AutonomousDrone/Output/ipadVideo'
-            folder = '/home/yarl/Desktop/Github/AutonomousDrone/Output/droneVideo3.0'
+            #folder = '/home/yarl/Desktop/Github/AutonomousDrone/Output/droneVideo3.0'
+            folder = '../../../Output/droneVideo3.0'
             for filename in os.listdir(folder):
                 img = cv2.imread(os.path.join(folder, filename))
                 img = cv2.resize(img, (width, height)).astype(np.float32)/255.
