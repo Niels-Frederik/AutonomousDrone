@@ -12,12 +12,14 @@ sys.path.insert(0, os.path.abspath(os.path.dirname('RoutePlanner/')))
 sys.path.insert(0, os.path.abspath(os.path.dirname('Calibration/')))
 sys.path.insert(0, os.path.abspath(os.path.dirname('DepthEstimation/DenseDepth/')))
 sys.path.insert(0, os.path.abspath(os.path.dirname('DepthEstimation/PyDNet/')))
+sys.path.insert(0, os.path.abspath(os.path.dirname('DepthEstimation/FastDepth/')))
 
 from collisionAvoider import CollisionAvoider
 from collisionAvoiderDepthImage import CollisionAvoiderDepthImage
 from depthEstimator import DepthEstimator
 from depthEstimatorDenseDepth import DepthEstimatorDenseDepth
 from depthEstimatorPydnet import DepthEstimatorPydnet
+from depthEstimatorFastDepth import DepthEstimatorFastDepth
 from droneController import DroneController
 from controller import Controller
 from visualizer import Visualizer
@@ -71,6 +73,10 @@ class Main():
             self.depthEstimator = DepthEstimatorPydnet(self.debug)
             depthImage = self.depthEstimator.estimateDepth(frame)
             self.collisionAvoider = CollisionAvoiderDepthImage(depthImage, self.droneController, self.debug)
+        elif mode == 3:
+            self.depthEstimator = DepthEstimatorFastDepth(self.debug)
+            depthImage = self.depthEstimator.estimateDepth(frame)
+            self.collisionAvoider = CollisionAvoiderDepthImage(depthImage, self.droneController, self.debug)
 
     def start(self):
         if self.live:
@@ -113,13 +119,13 @@ def getSocket(remoteTest):
     return None
 
 if __name__ == '__main__':
-    #videoPath = '../Source/Video/droneVideo4.0.mp4'
-    videoPath = '../Source/Video/ipadVideo.mp4'
+    videoPath = '../Source/Video/droneVideo4.0.mp4'
+    #videoPath = '../Source/Video/ipadVideo.mp4'
     localTest = True
     remoteTest = False
     debug = True
     #main = Main(localTest, remoteTest, debug, mode=2)
-    main = Main(localTest, remoteTest, debug, videoPath, mode=2)
+    main = Main(localTest, remoteTest, debug, videoPath, mode=3)
     main.start()
     #start(video, localTest, remoteTest, debug)
 
