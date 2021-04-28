@@ -6,10 +6,10 @@ This project aims to control a drone autonomously by getting its video feed, ana
 
 ## Requirements
 **[Install necessary model](https://s3-eu-west-1.amazonaws.com/densedepth/nyu.h5)**
-<p>
-This is only required for DenseDepth - mode 1. \\
-In case the link doesn't work. Go to **[DenseDepth's github](https://github.com/ialhashim/DenseDepth)** to hopefully find an updated link for the  "NYU Depth V2" trained model
-</p>
+
+This is only required for DenseDepth - mode 1. 
+
+In case the link doesn't work. Go to [DenseDepth's github](https://github.com/ialhashim/DenseDepth) to hopefully find an updated link for the  "NYU Depth V2" trained model
 
 **Drone network**
 <p>
