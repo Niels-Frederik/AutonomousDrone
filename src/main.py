@@ -4,6 +4,7 @@ import cv2
 import _thread
 import time
 import numpy as np
+import argparse
 
 sys.path.insert(0, os.path.abspath(os.path.dirname('CollisionDetection/')))
 sys.path.insert(0, os.path.abspath(os.path.dirname('Controller/')))
@@ -118,14 +119,29 @@ def getSocket(remoteTest):
             return None
     return None
 
+def setupParser():
+    parser = argparse.ArgumentParser(description='AutonomousDrone')
+    parser.add_argument('--mode', type=int, default=3)
+    parser.add_argument('--remoteView', type=bool, default=False)
+    parser.add_argument('--localView', type=bool, default=True)
+    parser.add_argument('--debug', type=bool, default=False)
+    parser.add_argument('--live', type=bool, default=False)
+    parser.add_argument('--video', type=str, default='../Source/Video/droneVideo4.0.mp4')
+    return parser
+
 if __name__ == '__main__':
-    videoPath = '../Source/Video/droneVideo4.0.mp4'
+
+    args = setupParser().parse_args()
+    #videoPath = '../Source/Video/droneVideo4.0.mp4'
     #videoPath = '../Source/Video/ipadVideo.mp4'
+
     localTest = True
     remoteTest = False
     debug = True
     #main = Main(localTest, remoteTest, debug, mode=2)
-    main = Main(localTest, remoteTest, debug, videoPath, mode=3)
+    if args.live:
+        args.video = None
+    main = Main(args.localView, args.remoteView, args.debug, args.video, mode=args.mode)
     main.start()
     #start(video, localTest, remoteTest, debug)
 
