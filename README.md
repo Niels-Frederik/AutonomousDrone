@@ -14,13 +14,37 @@ In case of running live with drone. You should connect to the drones wifi before
 
 **Install virtual environment** <br/>
 Install a virtual environment from one of the three requirements.txt files depending on which mode you wish to run <br/>
-* denseDepthRequirements.txt - python 3.8.5
-* pydnetRequirements.txt - python 3.7.10
-* fastDepthRequirements.txt - python 3.8.5
+* denseDepthRequirements.txt <br/>
+require python 3.8.5
+* pydnetRequirements.txt <br/>
+require python 3.7.10
+* fastDepthRequirements.txt <br/>
+require python 3.8.5
 
 ## Arguments
-Different parameters
+Below is the optional parameters to the main.py
 
-Different modes
+* --mode 3 <br/>
+Used to determine which model and mode is used. 1 = DenseDepth, 2 = PyDNet, 3 = FastDepth
+
+* --remoteView False <br/>
+Used to enable remote view of the input and output images via internet
+
+* --localView True <br/>
+Used to choose whether to locally view the input and output images. Use --localView "" to set to false
+
+* --debug False <br/>
+Used to show extra images and print which action the drone tries to take
+
+* --live False <br/>
+Used to choose whether to run with the drone or from a preloaded video
+
+* --video ../Source/Video/droneVideo4.0.mp4 <br/>
+Used to choose the path of the video used as input in case of not running live with the drone
 
 ## How to run
+After enabling the desired virtual environment got to the src folder
+* cd src/
+
+run the program with the desired parameters 
+* eg. python main.py --live True --mode 2
