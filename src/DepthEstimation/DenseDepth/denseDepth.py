@@ -19,13 +19,8 @@ from matplotlib import pyplot as plt
 
 class DenseDepth():
     def __init__(self):
-        print('Loading model...')
-        parser = argparse.ArgumentParser(description='High Quality Monocular Depth Estimation via Transfer Learning')
-        parser.add_argument('--model', default='DepthEstimation/DenseDepth/nyu.h5', type=str, help='Trained Keras model file.')
-        args = parser.parse_args()
         custom_objects = {'BilinearUpSampling2D': BilinearUpSampling2D, 'depth_loss_function': None}
-        self.model = load_model(args.model, custom_objects=custom_objects, compile=False)
-        print('Model loaded ({0}).'.format(args.model))
+        self.model = load_model('./DepthEstimation/DenseDepth/nyu.h5', custom_objects=custom_objects, compile=False)
 
     def processImage(self, image):
         image = Image.fromarray(image)

@@ -127,6 +127,7 @@ def setupParser():
     parser.add_argument('--debug', type=bool, default=False)
     parser.add_argument('--live', type=bool, default=False)
     parser.add_argument('--video', type=str, default='../Source/Video/droneVideo4.0.mp4')
+    #flymode - closest / safest
     return parser
 
 if __name__ == '__main__':
@@ -134,14 +135,7 @@ if __name__ == '__main__':
     args = setupParser().parse_args()
     #videoPath = '../Source/Video/droneVideo4.0.mp4'
     #videoPath = '../Source/Video/ipadVideo.mp4'
-
-    localTest = True
-    remoteTest = False
-    debug = True
-    #main = Main(localTest, remoteTest, debug, mode=2)
     if args.live:
         args.video = None
     main = Main(args.localView, args.remoteView, args.debug, args.video, mode=args.mode)
     main.start()
-    #start(video, localTest, remoteTest, debug)
-
