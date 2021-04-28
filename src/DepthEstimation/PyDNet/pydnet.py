@@ -33,21 +33,19 @@ class Pydnet():
         img = cv2.resize(frame, (self.width, self.height)).astype(np.float32)/255.
         img = np.expand_dims(img, 0)
         disp = self.sess.run(self.model.results[self.resolution-1], feed_dict={self.placeholders['im0']: img})
-        #cv2.imshow('l', disp)
-        #cv2.waitKey(0)
-        disp_color = applyColorMap(disp[0,:,:,0]*20, 'plasma')
-        #cv2.imshow('p', disp_color)
-        #cv2.waitKey(100)
+        #disp_color = applyColorMap(disp[0,:,:,0]*20, 'plasma')
+        #r = disp_color.copy()
+        #for i in range(len(r)):
+        #    for j in range(len(r[i])):
+        #        #r[i, j, 0] = r[i, j, 0]/r[i, j, 1] * 255
+        #        r[i, j, 0] = (r[i, j, 0]-r[i, j, 1]) * 2
+        #r[:, :, 1] = 0
+        #r[:, :, 2] = 0
+        #output = cv2.cvtColor(r, cv2.COLOR_RGB2GRAY)
 
-        r = disp_color.copy()
-        for i in range(len(r)):
-            for j in range(len(r[i])):
-                #r[i, j, 0] = r[i, j, 0]/r[i, j, 1] * 255
-                r[i, j, 0] = (r[i, j, 0]-r[i, j, 1]) * 2
-
-        r[:, :, 1] = 0
-        r[:, :, 2] = 0
-        output = cv2.cvtColor(r, cv2.COLOR_RGB2GRAY)
+        outputInverse = disp[0,:,:,0]*20
+        #output = cv2.bitwise_not(output)
+        output = (1-outputInverse)
 
         #cv2.imshow('k', output)
         #cv2.waitKey(0)
