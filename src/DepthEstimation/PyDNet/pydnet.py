@@ -4,7 +4,7 @@ import os
 import argparse
 import time
 import datetime
-from utils import *
+from pydnetUtils import *
 from pydnetModel import *
 
 # forces tensorflow to run on CPU
