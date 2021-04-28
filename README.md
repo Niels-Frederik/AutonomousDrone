@@ -25,7 +25,8 @@ require python 3.8.5
 Below is the optional parameters to the main.py
 
 * --mode 3 <br/>
-Used to determine which model and mode is used. 1 = DenseDepth, 2 = PyDNet, 3 = FastDepth
+Used to determine which model and mode is used. <br/>
+1 = DenseDepth, 2 = PyDNet, 3 = FastDepth
 
 * --remoteView False <br/>
 Used to enable remote view of the input and output images via internet
@@ -43,8 +44,10 @@ Used to choose whether to run with the drone or from a preloaded video
 Used to choose the path of the video used as input in case of not running live with the drone
 
 ## How to run
-After enabling the desired virtual environment got to the src folder
-* cd src/
+After enabling the desired virtual environment got to the src folder <br/>
+From here run the program with the desired parameters.
 
-run the program with the desired parameters 
-* eg. python main.py --live True --mode 2
+```
+cd src/
+python main.py --live True --mode 2
+```
