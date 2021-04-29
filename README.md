@@ -2,7 +2,7 @@
 Welcome to AutonomousDrone <br/>
 By **Niels-Frederik** and **Yarlermanden** <br/>
 
-This project aims to control a drone autonomously by getting its video feed, analysing it and taking action oppon it to avoid collisions
+This project aims to control a drone autonomously by getting its video feed, analysing it and taking action upon it to avoid collisions
 
 ## Requirements
 **[Install necessary model](https://s3-eu-west-1.amazonaws.com/densedepth/nyu.h5)** <br/>

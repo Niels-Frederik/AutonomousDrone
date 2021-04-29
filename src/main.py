@@ -105,9 +105,13 @@ class Main():
             self.handleFrame(frame)
 
     def handleFrame(self, frame):
+        startTime = time.time()
         depthImage = self.depthEstimator.estimateDepth(frame)
         self.collisionAvoider.avoidCollisions(depthImage)
         self.visualizer.visualize(frame, depthImage)
+        endTime = time.time()
+        if self.debug:
+            print('FPS: ' + str(1/(endTime-startTime)))
 
 def getSocket(remoteTest):
     if remoteTest:
