@@ -26,17 +26,15 @@ def main():
     imagePoints = []
     objectPoints = []
 
-    # <Exercise 6.3 (Task 2)>
     for filename in filenames:
         corner, pattern = detect_pattern_image(filename)
-        imagePoints.append(corner)
-        objectPoints.append(pattern)
+        if corner is not None and pattern is not None:
+            imagePoints.append(corner)
+            objectPoints.append(pattern)
 
-    # <Exercise 6.3 (Task 3)>
     # Calculate camera calibration
     rms, cameraMatrix, distCoeffs, rvecs, tvecs = cv2.calibrateCamera(objectPoints, imagePoints, (w,h), None, None)
 
-    # <Exercise 6.3 (Task 4)>
     # Save the calibration files.
     np.save(folder + "rms.npy", rms)
     np.save(folder + "cameraMatrix.npy", cameraMatrix)
@@ -44,10 +42,8 @@ def main():
     np.save(folder + "rvecs.npy", rvecs)
     np.save(folder + "tvecs.npy", tvecs)
 
-    # <Exercise 6.3 (Task 5)>
     # Undistort the image with the calibration.
     for filename in filenames:
-
         # Create the new filenames.
         filepath = filename[:-4]
         old_image = filepath + "_Chessboard.png"
@@ -61,16 +57,13 @@ def main():
         # Image resolution.
         h, w = image.shape[:2]
 
-        # <Exercise 6.3 (Task 5.A)>
         # Return the new camera matrix based on the free scaling parameter.
         newCameraMatrix, roi = cv2.getOptimalNewCameraMatrix(cameraMatrix, distCoeffs, (w,h), 1)
 
-        # <Exercise 6.3 (Task 5.B)>
         # Transform an image to compensate for lens distortion.
         newImage = cv2.undistort(image, cameraMatrix, distCoeffs, None, newCameraMatrix)
         x,y,w,h = roi
         newImageCrop = newImage[y:y+h, x:x+w]
-        # <Exercise 6.3 (Task 5.C)>
         cv2.imwrite(new_image, newImageCrop)
 
     # When everything done, release the capture and record objects.
@@ -99,7 +92,7 @@ def detect_pattern_image(filename, square_size=1.0):
     # Open the input image as a grayscale image.
     image = cv2.imread(filename, cv2.IMREAD_GRAYSCALE)
     if image is None:
-        return None
+        return (None, None)
 
     # Define the pattern used to calibrated the camera.
     pattern_points, pattern_size = creates_pattern_vectors(square_size)
@@ -120,7 +113,7 @@ def detect_pattern_image(filename, square_size=1.0):
 
     # Check if there are valid data.
     if not retval:
-        return None
+        return (None, None)
 
     return (corners.reshape(-1, 2), pattern_points)
 

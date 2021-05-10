@@ -30,9 +30,9 @@ class DenseDepth():
         image = Image.fromarray(image)
         images = []
         images.append(image)
-        #images[0] = images[0].resize((640, 480), pil.LANCZOS)
+        images[0] = images[0].resize((640, 480), pil.LANCZOS)
         #images[0] = images[0].resize((224, 224), pil.LANCZOS)
-        images[0] = images[0].resize((320, 320), pil.LANCZOS)
+        #images[0] = images[0].resize((320, 320), pil.LANCZOS)
         image = load_image(images)
         outputs = predict(self.model, image, batch_size=1)
         output = np.array([[val[0] for val in sublist] for sublist in outputs[0]])

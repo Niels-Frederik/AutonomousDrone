@@ -7,7 +7,7 @@ import VideoIO
 
 path = './inputs/'
 outPath = './outputs/'
-video = VideoIO.loadVideo(path + 'IMG_0461.mp4')
+video = VideoIO.loadVideo(path + 'droneCalibrationVideo.mp4')
 i = 0
 
 while video.isOpened():
@@ -26,7 +26,7 @@ while video.isOpened():
             foundAvailableName = True
 
     cv2.imshow('name', image)
-    key = cv2.waitKey(1)
+    key = cv2.waitKey(10)
     if key == ord('q'):
         break
     elif key == ord('s'):

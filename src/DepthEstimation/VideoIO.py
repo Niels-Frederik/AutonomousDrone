@@ -34,7 +34,7 @@ def saveEachImageInVideo(video, savePath, undistort):
         try:
             _, image = video.read()
             #image = cv2.resize(image, (1280,1024), interpolation=cv2.INTER_CUBIC)
-            image = cv2.resize(image, (1920,1080), interpolation=cv2.INTER_CUBIC)
+            #image = cv2.resize(image, (1920,1080), interpolation=cv2.INTER_CUBIC)
             #image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
             if undistort:
                 if camera == None:
@@ -78,5 +78,6 @@ if __name__ == '__main__':
     from Camera import Camera
     #captureScreenLive()
     #video = loadVideo('../Source/Video/droneVideo4.0.mp4')
-    video = loadVideo('../../Source/Video/ipadVideo.mp4')
-    saveEachImageInVideo(video, '../../Output/ipadVideoUncalibrated', False)
+    video = loadVideo('../../Source/Video/droneVideo2.0.mp4')
+    #video = loadVideo('../../Source/Video/ipadVideo.mp4')
+    saveEachImageInVideo(video, '../../Output/droneVideoUndistorted2.0', True)

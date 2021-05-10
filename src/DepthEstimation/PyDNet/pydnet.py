@@ -13,6 +13,7 @@ class Pydnet():
     def __init__(self):
         os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
         self.width = 512
+        #self.width = 256
         self.height = 256
         self.resolution = 1 #1:H, 2:Q, 3:E
         self.checkpoint_dir = './DepthEstimation/PyDNet/checkpoint/IROS18/pydnet'

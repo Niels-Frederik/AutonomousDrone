@@ -8,6 +8,7 @@ class Camera():
         #folder = './Calibration/outputs/'
         self.rms = np.load(folder + 'rms.npy')
         self.cameraMatrix = np.load(folder + 'cameraMatrix.npy')
+        print(self.cameraMatrix)
         self.distCoeffs = np.load(folder + 'distCoeffs.npy')
         self.rvecs = np.load(folder + 'rvecs.npy')
         self.tvecs = np.load(folder + 'tvecs.npy')
