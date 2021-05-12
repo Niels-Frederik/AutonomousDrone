@@ -78,6 +78,8 @@ if __name__ == '__main__':
     from Camera import Camera
     #captureScreenLive()
     #video = loadVideo('../Source/Video/droneVideo4.0.mp4')
-    video = loadVideo('../../Source/Video/droneVideo2.0.mp4')
+    #video = loadVideo('../../Source/Video/droneVideo2.0.mp4')
+    video = loadVideo('../../Source/Video/droneVideo5.0.mp4')
     #video = loadVideo('../../Source/Video/ipadVideo.mp4')
-    saveEachImageInVideo(video, '../../Output/droneVideoUndistorted2.0', True)
+    #saveEachImageInVideo(video, '../../Output/droneVideoUndistorted5.0', True)
+    saveEachImageInVideo(video, '../../Output/droneVideo5.0', False)
