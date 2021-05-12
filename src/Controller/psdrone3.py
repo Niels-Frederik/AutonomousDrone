@@ -42,7 +42,7 @@ class Drone(object):
 ### Start and stop using the drone ###=-
 ######################################=-
 	###### Bootup and base configuration
-	def __init__(self):
+	def __init__(self, droneIp):
 		self.__Version = 		"3.2.0 alpha"
 		self.__lock = 			threading.Lock()	# To prevent semaphores
 		self.__startTime = 		time.time()
@@ -54,7 +54,8 @@ class Drone(object):
 		self.stopOnComLoss = 	False				# when there is a communication-problem, drone will land or not
 
 		# Drone communication variables
-		self.DroneIP = 		"192.168.1.1"
+		#self.DroneIP = 		"192.168.1.1"
+		self.DroneIP = 		droneIp
 		self.NavDataPort = 	5554
 		self.VideoPort = 	5555
 		self.CmdPort = 		5556

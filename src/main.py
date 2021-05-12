@@ -32,7 +32,7 @@ from Connection import Connector
 import PIL.Image as pil
 
 class Main():
-    def __init__(self, localTest, remoteTest, debug, videoPath = None, mode = 0):
+    def __init__(self, localTest, remoteTest, debug, videoPath, mode, droneIp):
         self.localTest = localTest
         self.remoteTest = remoteTest
         self.debug = debug
@@ -41,7 +41,7 @@ class Main():
         self.initializeVideo(videoPath)
         self.socket = getSocket(remoteTest)
         self.visualizer = Visualizer(localTest, remoteTest, self.socket)
-        self.initializeHelpers(mode)
+        self.initializeHelpers(mode, droneIp)
 
     def initializeVideo(self, videoPath):
         if videoPath != None:
@@ -50,9 +50,9 @@ class Main():
         else:
             self.live = True
 
-    def initializeHelpers(self, mode):
+    def initializeHelpers(self, mode, droneIp):
         if self.live:
-            self.droneController = DroneController(self.debug)
+            self.droneController = DroneController(self.debug, droneIp)
             frame = self.droneController.getNewImage()
             #frame = VideoIO.captureScreen()
         else:
@@ -132,8 +132,8 @@ def setupParser():
     parser.add_argument('--localView', type=bool, default=True)
     parser.add_argument('--debug', type=bool, default=False)
     parser.add_argument('--live', type=bool, default=False)
-    #parser.add_argument('--video', type=str, default='../Source/Video/droneVideo4.0.mp4')
     parser.add_argument('--video', type=str, default='../Source/Video/droneVideo2.0.mp4')
+    parser.add_argument('--ip', type=str, default='192.168.1.1')
     #flymode - closest / safest
     return parser
 
@@ -142,5 +142,5 @@ if __name__ == '__main__':
     args = setupParser().parse_args()
     if args.live:
         args.video = None
-    main = Main(args.localView, args.remoteView, args.debug, args.video, mode=args.mode)
+    main = Main(args.localView, args.remoteView, args.debug, args.video, mode=args.mode, droneIp=args.ip)
     main.start()

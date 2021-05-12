@@ -4,8 +4,8 @@ import time
 from controller import Controller
 
 class DroneController(Controller):
-    def __init__(self, debug):
-        drone = psdrone3.Drone()
+    def __init__(self, debug, droneIp):
+        drone = psdrone3.Drone(droneIp)
         drone.startup()
         drone.reset()
         while(drone.getBattery()[0] == -1): time.sleep(0.1)
